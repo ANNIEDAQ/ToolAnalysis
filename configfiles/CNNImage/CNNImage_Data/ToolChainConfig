@@ -12,15 +12,14 @@ log_mode Interactive # Interactive=cout , Remote= remote logging system "serserv
 log_local_path ./log
 log_service LogStore
 
-
 ###### Service discovery ##### Ignore these settings for local analysis
 service_publish_sec -1
 service_kick_sec -1
 
 ##### Tools To Add #####
-Tools_File configfiles/CNNImage/ToolsConfig  ## list of tools to run and their config files
+Tools_File configfiles/CNNImage/CNNImage_Data/ToolsConfig  ## list of tools to run and their config files
 
 ##### Run Type #####
-Inline 10 ## number of Execute steps in program, -1 infinite loop that is ended by user 
+Inline -1 ## number of Execute steps in program, -1 infinite loop that is ended by user 
 Interactive 0 ## set to 1 if you want to run the code interactively
 

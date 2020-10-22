@@ -1,0 +1,13 @@
+#TimeClustering Config File
+
+verbosity 1
+IsData 1
+MinDigitsForTrack 3
+MaxMrdSubEventDuration 30  # [ns] if all hits are within this period, just make one subevent
+MinSubeventTimeSep 30      # [ns] gaps of at leas this long delimit subevents
+MakeMrdDigitTimePlot 0 # draw a 1D histogram of times to check subevent splitting is suitble
+MakeSingleEventPlots 0
+LaunchTApplication 0
+OutputROOTFile test.root
+MapChankey_WCSimID ./configfiles/FindMrdTracks/MRD_Chankey_WCSimID.dat
+

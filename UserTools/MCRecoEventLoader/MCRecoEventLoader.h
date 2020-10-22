@@ -86,6 +86,9 @@ class MCRecoEventLoader: public Tool {
   /// \brief Push projected particle MRD hit boolean to RecoEvent store
   void PushProjectedMrdHit(bool projectedmrdhit);
 
+  /// \brief Push IBD/IBD-like true information to RecoEvent store
+  void PushIBDInfo();
+
   /// \brief Reset initialized classes
   ///
   /// Clear True Vertices 

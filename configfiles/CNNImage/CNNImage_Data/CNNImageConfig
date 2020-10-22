@@ -1,0 +1,12 @@
+# CNNImage config file
+
+verbosity 1
+DataMode Normal			#options: Charge/Time
+SaveMode PMT-wise		#options: Geometric / PMT-wise
+DimensionX 16			#choose something suitable (32/64/...)
+DimensionY 20			#choose something suitable (32/64/...)
+OutputFile R1613p1_CNNImage
+DimensionLAPPD 5              	# Size of the LAPPD pannal 
+IncludeTopBottom 1
+DetectorConf ANNIEp2v6		#specify the detector version used in simulation
+IsData 1			#IsData: 0/1

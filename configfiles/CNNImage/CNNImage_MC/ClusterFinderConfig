@@ -1,0 +1,11 @@
+# ClusterFinder Config File
+
+HitStore MCHits #Either MCHits or Hits (accessed in ANNIEEvent store)
+OutputFile mc_clusters.root
+ClusterFindingWindow 50 # in ns, size of the window used to "clusterize"
+AcqTimeWindow 70000 # in ns, size of the acquisition window
+ClusterIntegrationWindow 50 # in ns, all hits with +/- 1/2 of this window are considered in the cluster
+MinHitsPerCluster 5 # group of hits are considered clusters above this amount of hits
+end_of_window_time_cut 0.95 # from o to 1, length of the window you want to loop over with respect to acq. window (1 for full window, 0.95 for 95% from the start)
+Plots2D 0 #Draw 2D charge-vs-time plots?
+verbosity 1

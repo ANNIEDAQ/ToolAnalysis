@@ -1,0 +1,27 @@
+# EventSelector config file
+
+verbosity 1
+MCPMTVolCut 1
+MCFVCut 1
+MCMRDCut 0
+MCPiKCut 0
+MCIsMuonCut 0
+MCIsElectronCut 0
+MCIsSingleRingCut 0
+MCIsMultiRingCut 0
+MCProjectedMRDHit 0
+MCEnergyCut 0
+Emin 0		#Minimum energy in MeV
+Emax 1000	#Maximum energy in MeV
+MCDSNBlike 0
+MRDRecoCut 0
+RecoPMTVolCut 0
+RecoFVCut 0
+NHitCut 0
+NHitmin 10	#Minimum number of hit digits
+PromptTrigOnly 1
+PMTMRDCoincCut 0
+PMTMRDOffset 0
+NoVeto 0
+Veto 0
+SaveStatusToStore 1

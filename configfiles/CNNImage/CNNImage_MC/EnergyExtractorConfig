@@ -1,0 +1,13 @@
+# Energy Extractor config file
+
+OutputFile test_beam_0
+Verbosity 1
+SaveNeutrino 1
+SaveElectron 1
+SaveGamma 0
+SaveMuon 1
+SavePion 1
+SaveKaon 1
+SaveNeutron 1
+SaveVisible 1
+

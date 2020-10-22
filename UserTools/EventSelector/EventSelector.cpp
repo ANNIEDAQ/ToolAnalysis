@@ -31,6 +31,7 @@ bool EventSelector::Initialise(std::string configfile, DataModel &data){
   m_variables.Get("MCEnergyCut", fMCEnergyCut);
   m_variables.Get("Emin",Emin);
   m_variables.Get("Emax",Emax);
+  m_variables.Get("MCDSNBlike",fMCDSNBlike);
   m_variables.Get("NHitCut", fNHitCut);
   m_variables.Get("NHitmin", fNHitmin);
   m_variables.Get("PromptTrigOnly", fPromptTrigOnly);
@@ -169,6 +170,7 @@ bool EventSelector::Execute(){
 
     IsElectron = this->ParticleCheck(11);
     m_data->Stores.at("RecoEvent")->Set("MCIsElectron",IsElectron);
+
   }
 
 
@@ -243,6 +245,12 @@ bool EventSelector::Execute(){
     if (!HasProjectedMRDHit) fEventFlagged |= EventSelector::kFlagMCProjectedMRDHit;
   }
 
+  if (fMCDSNBlike){
+    bool IsDSNBlike = this->DSNBCheck();
+    fEventApplied |= EventSelector::kFlagMCDSNBlike;
+    if (!IsDSNBlike) fEventFlagged |= EventSelector::kFlagMCDSNBlike;
+  }
+
   // BEGIN CUTS USING RECONSTRUCTED INFORMATION //
   if(fRecoFVCut || fRecoPMTVolCut){
 	// Retrive Reconstructed vertex from RecoEvent 
@@ -297,6 +305,10 @@ bool EventSelector::Execute(){
   m_data->Stores.at("RecoEvent")->Set("EventFlagApplied", fEventApplied);
   m_data->Stores.at("RecoEvent")->Set("EventFlagged", fEventFlagged);
 
+  if (verbosity >= v_debug){
+    std::cout << "EventSelector tool: fEventApplied: "<< fEventApplied << ", fEventFlagged: " << fEventFlagged << std::endl;
+    std::cout << "EventSelector tool: Bit representation: fEventApplied: " << std::bitset<32>(fEventApplied) << ", fEventFlagged: " << std::bitset<32>(fEventFlagged) << std::endl;
+  }
 
   return true;
 }
@@ -542,6 +554,20 @@ bool EventSelector::EventSelectionByMCProjectedMRDHit() {
   bool has_projected_mrd_hit;
   m_data->Stores.at("RecoEvent")->Get("ProjectedMRDHit",has_projected_mrd_hit);
   return has_projected_mrd_hit;
+
+}
+
+bool EventSelector::DSNBCheck() {
+  
+  bool is_dsnb_like = false;
+  int neutron_count;
+  int gamma_count;
+  int positron_count;
+  m_data->Stores.at("RecoEvent")->Get("NeutronCount",neutron_count);
+  m_data->Stores.at("RecoEvent")->Get("GammaCount",gamma_count);
+  m_data->Stores.at("RecoEvent")->Get("PositronCount",positron_count);
+  if (neutron_count == 1 && (gamma_count >= 1 || positron_count >=1)) is_dsnb_like = true;
+  return is_dsnb_like;
 
 }
 

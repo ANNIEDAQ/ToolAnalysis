@@ -1,0 +1,11 @@
+# CNNImage config file
+
+verbosity 0
+DataMode Normal			#options: Charge/Time
+SaveMode PMT-wise		#options: Geometric / PMT-wise
+DimensionX 16			#choose something suitable (32/64/...)
+DimensionY 20			#choose something suitable (32/64/...)
+OutputFile test_beam_lappd5x5_0
+DimensionLAPPD 5              # Size of the LAPPD pannal 
+IncludeTopBottom 1
+DetectorConf ANNIEp2v6		#specify the detector version used in simulation

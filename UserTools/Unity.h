@@ -126,6 +126,7 @@
 #include "ClusterClassifiers.h"
 #include "MRDLoopbackAnalysis.h"
 #include "VetoEfficiency.h"
+#include "EnergyExtractor.h"
 #include "MonitorTrigger.h"
 #include "EventClassification.h"
 #include "DataSummary.h"

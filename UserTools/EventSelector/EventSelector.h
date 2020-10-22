@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include <bitset>
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -47,7 +48,8 @@ class EventSelector: public Tool {
    kFlagMCEnergyCut   = 0x4000, //16384
    kFlagPMTMRDCoinc   = 0x8000, //32768
    kFlagNoVeto        = 0x10000, //65536
-   kFlagVeto        = 0x20000 //131072
+   kFlagVeto        = 0x20000, //131072
+   kFlagMCDSNBlike = 0x40000 //262144
   } EventFlags_t;
 
  private:
@@ -138,6 +140,13 @@ class EventSelector: public Tool {
   /// the MRD.
   bool EventSelectionByMCProjectedMRDHit();
 
+  /// \brief Event selection by DSNB-like
+  ////
+  ///This event selection criteria requires a positron+neutron coincidence or a 
+  ///gamma+neutron coincidence that might be misinterpreted as an IBD signature
+  bool DSNBCheck();
+
+
   /// \brief Event selection by PMT/MRD time coincidence
   ////
   /// This event selection criteria requires clustered events in tank & MRD
@@ -199,6 +208,7 @@ class EventSelector: public Tool {
   int  fNHitmin = 4;
   double Emin = 0.;
   double Emax = 10000.;
+  bool fMCDSNBlike = false;
   bool fRecoPMTVolCut = false;
   bool fRecoFVCut = false;
   bool fPMTMRDCoincCut = false;

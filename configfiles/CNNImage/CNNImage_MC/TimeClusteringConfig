@@ -1,0 +1,14 @@
+#FindMrdTracks Config File
+# all variables retrieved with m_variables.Get() must be defined here!
+
+OutputDirectory .
+verbosity 1
+MinDigitsForTrack 4
+MaxMrdSubEventDuration 30  # [ns] if all hits are within this period, just make one subevent
+MinSubeventTimeSep 30      # [ns] gaps of at leas this long delimit subevents
+WriteTracksToFile 1
+MakeMrdDigitTimePlot 0 # draw a 1D histogram of times to check subevent splitting is suitble
+DrawTruthTracks 1 # whether to add MC Truth track info for drawing in MrdPaddlePlot Tool
+                  ## note you need to run that tool to actually view the tracks!
+MapChankey_WCSimID ./configfiles/MrdPaddleEfficiency/MRD_Chankey_WCSimID.dat
+IsData 0	#Data or MC file?

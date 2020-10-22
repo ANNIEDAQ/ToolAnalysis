@@ -1,0 +1,13 @@
+# DigitBuilder config file
+
+verbosity 5
+IsMC 0
+ParametricModel 1
+PhotoDetectorConfiguration PMT_only
+xshift 0.0
+yshift 14.46469
+zshift -168.1
+LAPPDIDFile ./configfiles/VertexReco/PhaseIIRecoTruth/LAPPDIDs.txt
+DigitChargeThr 0
+ChankeyToPMTIDMap ./configfiles/EventDisplay/Data-RecoEvent/Chankey_WCSimID.dat
+SinglePEGains ./configfiles/Classification/ClassificationVarsData/ChannelSPEGains_BeamRun20192020.csv

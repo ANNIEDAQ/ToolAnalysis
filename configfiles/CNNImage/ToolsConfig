@@ -1,3 +1,0 @@
-myLoadWCSim LoadWCSim configfiles/CNNImage/LoadWCSimConfig
-#myLoadWCSimLAPPD LoadWCSimLAPPD configfiles/CNNImage/LoadWCSimLAPPDConfig
-myCNNImage CNNImage configfiles/CNNImage/CNNImageConfig

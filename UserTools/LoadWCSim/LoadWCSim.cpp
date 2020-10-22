@@ -63,6 +63,11 @@ bool LoadWCSim::Initialise(std::string configfile, DataModel &data){
 		Log("LoadWCSim Tool: No Triggertype specified. Assuming TriggerType = Beam",v_warning,verbosity);
 		Triggertype = "Beam";	//other options: Cosmic / No Loopback
 	}
+	get_ok = m_variables.Get("PMTMask",PMTMask);
+	if (not get_ok){
+		Log("LoadWCSim Tool: Assuming to use no PMTMask",v_warning,verbosity);
+		PMTMask = "None";
+	}
 	MCEventNum=0;
 	get_ok = m_variables.Get("FileStartOffset",MCEventNum);
 	
@@ -187,6 +192,10 @@ bool LoadWCSim::Initialise(std::string configfile, DataModel &data){
 	MCFile = WCSimEntry->GetCurrentFile()->GetName();
 	m_data->Stores.at("ANNIEEvent")->Set("MCFile",MCFile);
 	
+	if (PMTMask != "None"){
+		masked_ids = this->LoadPMTMask(PMTMask);
+	}
+	
 	// use nominal beam values TODO
 	double beaminten=4.777e+12;
 	double beampow=3.2545e+16;
@@ -276,6 +285,7 @@ bool LoadWCSim::Execute(){
 	}
 	MCFile = WCSimEntry->GetCurrentFile()->GetName();
 	
+
 	MCHits->clear();
 	TDCData->clear();
 	mrd_firstlayer=false;
@@ -500,6 +510,7 @@ bool LoadWCSim::Execute(){
 			//WCSimRootChernkovDigiHit has methods GetTubeId(), GetT(), GetQ(), GetPhotonIds()
 			if(verbosity>2) cout<<"next digihit at "<<digihit<<endl;
 			int tubeid = digihit->GetTubeId();  // geometry TubeID->channelkey map is made INCLUDING offset of 1
+			if (PMTMask != "None" && std::find(masked_ids.begin(),masked_ids.end(),tubeid)!=masked_ids.end()) continue; //Omit masked PMT IDs
 			if(verbosity>2) cout<<"tubeid="<<tubeid<<endl;
 			if(pmt_tubeid_to_channelkey.count(tubeid)==0){
 				cerr<<"LoadWCSim ERROR: tank PMT with no associated ChannelKey!"<<endl;
@@ -1343,4 +1354,18 @@ void LoadWCSim::BuildTimeArrayOffsetMap(WCSimRootTrigger* firstTrig){
 	} else {
 		Log("LoadWCSim Tool: BuildTimeArrayOffsetMap called with WCSimVersion<2: This is not needed!?",v_error,verbosity);
 	}
+}
+
+std::vector<int> LoadWCSim::LoadPMTMask(std::string path_to_pmtmask){
+
+	std::vector<int> mask_vector;
+	int temp_id;
+	ifstream maskfile(path_to_pmtmask.c_str());
+	while (!maskfile.eof()){
+		maskfile >> temp_id;
+		mask_vector.push_back(temp_id);
+		if (maskfile.eof()) break;
+	}
+
+	return mask_vector;
 }

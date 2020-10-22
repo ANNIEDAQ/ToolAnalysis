@@ -81,6 +81,8 @@ bool MCRecoEventLoader::Execute(){
   ///Get MC Particle information
   this->FindTrueVertexFromMC();
   if (fGetPiKInfo) this->FindPionKaonCountFromMC();
+  
+  this->PushIBDInfo();
 
   this->PushTrueVertex(true);
   this->PushTrueStopVertex(true);
@@ -319,10 +321,36 @@ void MCRecoEventLoader::PushProjectedMrdHit(bool projectedmrdhit){
 
 double MCRecoEventLoader::GetCherenkovThresholdE(int pdg_code) {
   Log("MCRecoEventLoader Tool: GetCherenkovThresholdE",v_message,verbosity);            ///> Calculate Cherenkov threshold energies depending on particle pdg
-  //std::cout <<"mass particle: "<<pdgcodetomass[pdg_code]<<std::endl;
   double Ethr = pdgcodetomass[pdg_code]*sqrt(1/(1-1/(n*n)));
-  //std::cout <<"Etrh: "<<Ethr<<std::endl;
   return Ethr;
+}
+
+void MCRecoEventLoader::PushIBDInfo(){
+
+  Log("MCRecoEventLoader Tool: PushIBDInfo",v_message,verbosity);
+
+  int n_neutrons = 0;
+  int n_gammas = 0;
+  int n_positrons = 0;
+
+  if(fMCParticles){
+    Log("MCRecoEventLoader::  Tool: Num MCParticles = "+to_string(fMCParticles->size()),v_message,verbosity);
+    for(unsigned int particlei=0; particlei<fMCParticles->size(); particlei++){
+      MCParticle aparticle = fMCParticles->at(particlei);
+      if(aparticle.GetParentPdg()==0) {                //primary particle
+        int pdg = aparticle.GetPdgCode();
+        double energy = aparticle.GetStartEnergy();
+        if (pdg == 2112) n_neutrons++;
+        if (pdg == -11 && energy < 100) n_positrons++;
+        if (pdg == 22 && energy < 100) n_gammas++;
+      }
+    }
+  }
+
+  m_data->Stores.at("RecoEvent")->Set("NeutronCount",n_neutrons);
+  m_data->Stores.at("RecoEvent")->Set("PositronCount",n_positrons);
+  m_data->Stores.at("RecoEvent")->Set("GammaCount",n_gammas); 
+  
 }
 
 

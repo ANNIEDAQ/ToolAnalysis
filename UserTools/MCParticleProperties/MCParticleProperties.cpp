@@ -106,6 +106,16 @@ bool MCParticleProperties::Execute(){
 		}
 		nextparticle->SetStartsInFiducialVolume(isinfiducialvol);
 		
+		Position startvertex_corr, stopvertex_corr;
+		startvertex_corr.SetX(startvertex.X());
+		startvertex_corr.SetY(startvertex.Y()-tank_yoffset);
+		//startvertex_corr.SetZ(startvertex.Z()-tank_start-tank_radius);
+		startvertex_corr.SetZ(startvertex.Z());
+		stopvertex_corr.SetX(stopvertex.X());
+		stopvertex_corr.SetY(stopvertex.Y()-tank_yoffset);
+		//stopvertex_corr.SetZ(stopvertex.Z()-tank_start-tank_radius);
+		stopvertex_corr.SetZ(stopvertex.Z());
+
 		//====================================================================================================
 		// Estimate MRD penetration TODO add mrd entry/exit points to WCSim Tracks?
 		//====================================================================================================
@@ -157,7 +167,7 @@ bool MCParticleProperties::Execute(){
 		// Calculate whether the extended (projected) particle trajectory would hit the MRD (first layer)
 		//======================================================================================================
 
-		atrackprojectedhitmrd  =  CheckProjectedMRDHit(startvertex, stopvertex, MRDSpecs::MRD_width, MRDSpecs::MRD_height,MRDSpecs::MRD_start);
+		atrackprojectedhitmrd  =  CheckProjectedMRDHit(startvertex_corr, stopvertex_corr, MRDSpecs::MRD_width, MRDSpecs::MRD_height,MRDSpecs::MRD_start);
 		
 		//new version based on external function calls
 		///////////////////////////////////////////////
@@ -168,7 +178,7 @@ bool MCParticleProperties::Execute(){
 		// if 2 interceptions are found, returns interception with larger Z,
 		// if 1 interception is found, returns L2 (stopping point).
 		// error returns true if >2 intercepts are found, or other error.
-		atrackentersmrd  =  CheckLineBox(startvertex, stopvertex, 
+		atrackentersmrd  =  CheckLineBox(startvertex_corr, stopvertex_corr, 
 										Position(-MRDSpecs::MRD_width,-MRDSpecs::MRD_height,MRDSpecs::MRD_start), 
 										Position(MRDSpecs::MRD_width,MRDSpecs::MRD_height,MRDSpecs::MRD_end),
 										MRDentrypoint, MRDexitpoint, checkboxlinerror);
@@ -368,15 +378,15 @@ bool MCParticleProperties::Execute(){
 			cout<<"c.f. max possible tank track length is "<<maxtanktracklength<<endl;
 		}
 		if(atracklengthintank > maxtanktracklength){
-			cerr<<"MCParticleProperties Tool: Track length is impossibly long!"<<endl;
+			Log("MCParticleProperties Tool: Track length is impossibly long!",v_error,verbosity);
 			//return false;
 		}
 		if(atracklengthintank > differencevector.Mag()){
-			cerr<<"MCParticleProperties Tool: Track length in tank is greater than total track length"<<endl;
+			Log("MCParticleProperties Tool: Track length in tank is greater than total track length.",v_warning,verbosity); //This seems to happen all the time for gammas/protons with short tracks--> reduce verbosity to warning
 			//return false;
 		}
 		if(TMath::IsNaN(atracklengthintank)){
-			cerr<<"MCParticleProperties Tool: NaN RESULT FROM MU TRACK LENGTH IN TANK?!"<<endl;
+			Log("MCParticleProperties Tool: NaN RESULT FROM MU TRACK LENGTH IN TANK?!",v_error,verbosity);
 			//return false;
 		}
 		
@@ -650,7 +660,8 @@ bool MCParticleProperties::CheckTankIntercepts( Position startvertex, Position s
 	Position differencevector = (stopvertex-startvertex).Unit();
 	
 	// first check for the track being in the z plane, as this will produce infinite gradients
-	if(abs(differencevector.Z())<0.1){
+	//if(abs(differencevector.Z())<0.1){	//0.1 seems to be too high of a threshold, happens for a lot of tracks (normalized unit vector)
+        if(abs(differencevector.Z())<0.001){ 
 		// we have a simpler case: the tank is simply a box of height tankheight
 		// and width = length of a chord at the given z
 		if(verbose){
@@ -756,7 +767,7 @@ bool MCParticleProperties::CheckTankIntercepts( Position startvertex, Position s
 					}
 				} // else track did not start outside tank x bounds: no wall entry
 				
-				if(!entryfound) cerr<<"could not find track entry point!?"<<endl;
+				if(!entryfound) Log("MCParticleProperties tool: Could not find track entry point!? ("+std::to_string(startvertex.X())+","+std::to_string(startvertex.Y())+","+std::to_string(startvertex.Z())+") --> ("+std::to_string(stopvertex.X())+","+std::to_string(stopvertex.Y())+","+std::to_string(stopvertex.Z())+")",v_error,verbosity);
 				else Hit2.SetZ(startvertex.Z());
 				if(verbose){
 					if(entryfound) cout<<"setting entry Z to "<<(Hit2.Z()-tank_start-tank_radius)<<endl;
@@ -798,7 +809,7 @@ bool MCParticleProperties::CheckTankIntercepts( Position startvertex, Position s
 					}
 				} // else track did not start outside tank y bounds: no wall exit
 				
-				if(!exitfound) cerr<<"could not find track exit point!?"<<endl;
+				if(!exitfound) Log("MCParticleProperties tool: Could not find track exit point!? ("+std::to_string(startvertex.X())+","+std::to_string(startvertex.Y())+","+std::to_string(startvertex.Z())+") --> ("+std::to_string(stopvertex.X())+","+std::to_string(stopvertex.Y())+","+std::to_string(stopvertex.Z())+")",v_error,verbosity);
 				else Hit.SetZ(startvertex.Z());
 				if(verbose){
 					if(exitfound) cout<<"setting exit Z to "<<(Hit.Z()-tank_start-tank_radius)<<endl;

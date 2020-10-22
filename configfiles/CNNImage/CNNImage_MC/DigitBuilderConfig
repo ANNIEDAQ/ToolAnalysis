@@ -1,0 +1,11 @@
+# DigitBuilder config file
+
+verbosity 1
+ParametricModel 1
+#Reading in MC files
+IsMC 1
+# There are three configurations: "PMT_only", "LAPPD_only", "All"
+PhotoDetectorConfiguration All
+#File must be in /pnfs/ space when loading on Fermilab cluster
+LAPPDIDFile ./configfiles/VertexReco/PhaseIIRecoTruth/LAPPDIDs.txt
+DigitChargeThr 0

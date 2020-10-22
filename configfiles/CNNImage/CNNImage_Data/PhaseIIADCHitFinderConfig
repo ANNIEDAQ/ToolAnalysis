@@ -1,0 +1,9 @@
+verbosity 0
+
+UseLEDWaveforms 0
+
+PulseFindingApproach threshold
+PulseWindowType dynamic
+DefaultADCThreshold 10
+DefaultThresholdType relative
+

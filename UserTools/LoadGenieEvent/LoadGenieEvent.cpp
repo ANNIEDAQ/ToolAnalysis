@@ -874,7 +874,7 @@ std::map<int,std::string>* LoadGenieEvent::GenerateMediumMap(){
 	mediummap.emplace(26,"M1018 Steel");
 	mediummap.emplace(28,"Decay Pipe Vacuum");
 	mediummap.emplace(31,"CT852");
-
+	return &mediummap;
 }
 
 #endif // LOADED_GENIE==1

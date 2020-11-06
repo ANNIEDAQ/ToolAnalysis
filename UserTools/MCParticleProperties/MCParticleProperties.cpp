@@ -76,7 +76,7 @@ bool MCParticleProperties::Execute(){
 	// Loop over reconstructed tracks and calculate additional properties
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Log("MCParticleProperties Tool: Looping over MCParticles",v_debug,verbosity);
-	for(int tracki=0; tracki<MCParticles->size(); tracki++){
+	for(int tracki=0; tracki<(int)MCParticles->size(); tracki++){
 		Log("MCParticleProperties Tool: Processing MCParticle "+to_string(tracki),v_debug,verbosity);
 		// Get the track details
 		MCParticle* nextparticle = &MCParticles->at(tracki);

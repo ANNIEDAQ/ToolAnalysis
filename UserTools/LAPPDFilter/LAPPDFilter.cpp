@@ -46,7 +46,7 @@ bool LAPPDFilter::Execute(){
     vector<Waveform<double>> Vfwavs;
 
     //loop over all Waveforms
-    for(int i=0; i<Vwavs.size(); i++){
+    for(int i=0; i<(int)Vwavs.size(); i++){
 
         Waveform<double> bwav = Vwavs.at(i);
         Waveform<double> filtwav = Waveform_FFT(bwav);

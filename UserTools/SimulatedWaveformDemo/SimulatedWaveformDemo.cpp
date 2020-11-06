@@ -41,7 +41,7 @@ bool SimulatedWaveformDemo::Initialise(std::string configfile, DataModel &data){
 		Log("SimulatedWaveformDemo Tool: Error getting AllData from pmtDataStore!",v_error,verbosity);
 		return false;
 	}
-	for(int i=0; i<pmtDataVecCopy.size(); i++){
+	for(int i=0; i<(int)pmtDataVecCopy.size(); i++){
 		intptr_t ddatapi = pmtDataVecCopy.at(i);
 		const std::vector<uint16_t>* ddatap = reinterpret_cast<const std::vector<uint16_t>*>(ddatapi);
 		pmtDataVector.push_back(ddatap);
@@ -200,7 +200,7 @@ bool SimulatedWaveformDemo::Execute(){
 		// The pmtDataStore AllData vector contains one waveform entry per ADC card.
 		Log("SimulatedWaveformDemo Tool: Looping over "+to_string(pmtDataVector.size())
 			 +" ADC cards",v_debug,verbosity);
-		for(int cardi=0; cardi<pmtDataVector.size(); cardi++){
+		for(int cardi=0; cardi<(int)pmtDataVector.size(); cardi++){
 			Log("SimulatedWaveformDemo Tool: Looping over "+to_string(ChannelsPerAdcCard)
 				 +" ADC channels",v_debug,verbosity);
 			const std::vector<uint16_t>* card_data = pmtDataVector.at(cardi);

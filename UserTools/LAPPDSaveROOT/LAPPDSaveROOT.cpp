@@ -94,7 +94,7 @@ LAPPDTree->Branch("PulseNum",&PulseNum);
   m_data->Stores["ANNIEEvent"]->Get("HitPulses",LAPPDHitPulses);
   m_data->Stores["ANNIEEvent"]->Get("PulseNum",PulseNum);
   std::cout<<LAPPDHitPulses.size()<<endl;
-  for(int i=0; i<LAPPDHitPulses.size(); i++){
+  for(int i=0; i<(int)LAPPDHitPulses.size(); i++){
     LAPPDPulse tempPulse = LAPPDHitPulses.at(i);
     std::cout<<tempPulse.GetChannelID()<<endl;
     if(tempPulse.GetChannelID()==0)
@@ -180,7 +180,7 @@ LAPPDTree->Branch("PulseNum",&PulseNum);
     vector<double> Vqs = pq->second;
 
     // loop over the charges and store to a hist
-    for(int pqi=0; pqi<Vqs.size(); pqi++){
+    for(int pqi=0; pqi<(int)Vqs.size(); pqi++){
       double theq = Vqs.at(pqi);
       if(channelno>=0&&channelno<NChannel){
         if(channelno!=TrigChannel) hQ[channelno]->Fill(theq);
@@ -188,7 +188,7 @@ LAPPDTree->Branch("PulseNum",&PulseNum);
     }
 
     //loop over all pulses fill histos and fill tree with pulse information
-    for(int i=0; i<Vpulses.size(); i++){
+    for(int i=0; i<(int)Vpulses.size(); i++){
       LAPPDPulse thepulse = Vpulses.at(i);
       if(channelno!=TrigChannel){
 
@@ -208,7 +208,7 @@ LAPPDTree->Branch("PulseNum",&PulseNum);
 
     //loop over all Waveforms, make histrograms
     std::vector<LAPPDPulse> thepulses;
-    for(int i=0; i<Vwavs.size(); i++){
+    for(int i=0; i<(int)Vwavs.size(); i++){
 
         Waveform<double> bwav = Vwavs.at(i);
         Waveform<double> bfwav;

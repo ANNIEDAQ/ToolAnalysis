@@ -124,7 +124,7 @@ bool VtxSeedGenerator::GenerateSeedGrid(int NSeeds) {
   Log("VtxSeedGenerator Tool: Getting clean RecoDigits for event", v_debug,verbosity);
   vSeedDigitList.clear();  
   RecoDigit digit;
-  for( fThisDigit=0; fThisDigit<fDigitList->size(); fThisDigit++ ){
+  for( fThisDigit=0; fThisDigit<(int)fDigitList->size(); fThisDigit++ ){
   	digit = fDigitList->at(fThisDigit);
     if( digit.GetFilterStatus() ){ 
       if( digit.GetDigitType() == fSeedType){ 
@@ -200,7 +200,7 @@ double VtxSeedGenerator::GetMedianSeedTime(Position pos){
   double fC, fN;
   double seedtime;
   std::vector<double> extraptimes;
-  for (int entry=0; entry<vSeedDigitList.size(); entry++){
+  for (int entry=0; entry<(int)vSeedDigitList.size(); entry++){
     fThisDigit = vSeedDigitList.at(entry);
     digitx = fDigitList->at(fThisDigit).GetPosition().X();
     digity = fDigitList->at(fThisDigit).GetPosition().Y();
@@ -253,7 +253,7 @@ bool VtxSeedGenerator::GenerateVertexSeeds(int NSeeds) {
   // Here only the digit type (PMT or LAPPD or all) is specified. 
   vSeedDigitList.clear();  
   RecoDigit digit;
-  for( fThisDigit=0; fThisDigit<fDigitList->size(); fThisDigit++ ){
+  for( fThisDigit=0; fThisDigit<(int)fDigitList->size(); fThisDigit++ ){
   	digit = fDigitList->at(fThisDigit);
     if( digit.GetFilterStatus() ){ 
       if( digit.GetDigitType() == fSeedType){ 
@@ -390,7 +390,7 @@ void VtxSeedGenerator::ChooseNextDigit(double& xpos, double& ypos, double& zpos,
   int numEntries = vSeedDigitList.size();
 
   fCounter++;
-  if( fCounter>=fDigitList->size() ) fCounter = 0;
+  if( fCounter>=(int)fDigitList->size() ) fCounter = 0;
   fThisDigit = vSeedDigitList.at(fLastEntry);
 
   double r = gRandom->Uniform(); 

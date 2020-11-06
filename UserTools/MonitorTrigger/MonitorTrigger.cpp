@@ -493,7 +493,7 @@ void MonitorTrigger::WriteToFile(){
   bool omit_entries = false;
   for (int i_entry = 0; i_entry < n_entries; i_entry++){
     t->GetEntry(i_entry);
-    if (t_start == t_file_start) {
+    if ((long)t_start == t_file_start) {
       Log("WARNING (MonitorTrigger): WriteToFile: Wanted to write data from file that is already written to DB. Omit entries.",v_warning,verbosity);
       omit_entries = true;
     }

@@ -170,7 +170,7 @@ bool LoadWCSimLAPPD::Execute(){
 		} else {
 			if(verbosity>2) cout<<"looping over "<<unassignedhits.size()
 							  <<" LAPPD hits that weren't in the first trigger window"<<endl;
-			for(int hiti=0; hiti<unassignedhits.size(); hiti++){
+			for(int hiti=0; hiti<(int)unassignedhits.size(); hiti++){
 				MCLAPPDHit nexthit = unassignedhits.at(hiti);
 				double digitst = nexthit.GetTime(); // ABSOLUTE
 				double relativedigitst=digitst-wcsimtriggertime; // relative to trigger time

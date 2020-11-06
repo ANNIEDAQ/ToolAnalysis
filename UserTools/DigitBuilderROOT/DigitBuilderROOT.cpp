@@ -103,7 +103,7 @@ bool DigitBuilderROOT::Execute(){
 
   Log("DigitBuilderROOT Tool: Looping through and loading all digits",v_debug,verbosity);
   //Loop through all Digits and load their information as RecoDigits
-  for(int j=0;j<fDigitType->size();j++){
+  for(int j=0;j<(int)fDigitType->size();j++){
     int region = -999;
     double calT = fDigitT->at(j);
     double calQ = fDigitQ->at(j);

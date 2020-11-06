@@ -59,7 +59,7 @@ double MaxAmp =-1.0;
     TempVector = LAPPDPulseCluster.at(i);
      std::cout<<"Temp Vector Size "<<TempVector.size()<<endl;
      //     std::cout<<"Temp Vector Channel "<<TempVector.at(i).GetChannelID()<<endl;
-    for (int j = 0; j < TempVector.size(); j++){
+    for (int j = 0; j < (int)TempVector.size(); j++){
       if (TempVector.at(j).GetTime()*1000. >= MinTimeWindow && TempVector.at(j).GetTime()*1000. <= MaxTimeWindow){
         if (TempVector.at(j).GetPeak() > MaxAmp){
           MaxAmp = TempVector.at(j).GetPeak();
@@ -92,7 +92,7 @@ LAPPDPulse OpposPulse;
 
     // is there a pulse in the time window, on the opposite side of the strip? (I hope so)
     LAPPDPulse OpposPulse;
-    for (int j = 0; j < negaVector.size(); j++){
+    for (int j = 0; j < (int)negaVector.size(); j++){
     //Find pulse inside this vector that has the same peak and thetime
       if (fabs(negaVector.at(j).GetTime()*1000. - MaxPulse.GetTime()*1000.) < PTRange && (fabs(negaVector.at(j).GetPeak() - MaxAmp) / MaxAmp) <= 0.1){
         OpposPulse = negaVector.at(j);
@@ -111,8 +111,8 @@ LAPPDPulse OpposPulse;
 
 
 //Perpendicular position
-  double SumAbove;
-  double SumBelow;
+  double SumAbove=0;
+  double SumBelow=0;
 
   if(!TwoSided){
   std::cout<<"Not twosided"<<endl;
@@ -122,7 +122,7 @@ LAPPDPulse OpposPulse;
 
       neighbourVector = LAPPDPulseCluster.at(i);
 
-      for (int j = 0; j < neighbourVector.size(); j++){
+      for (int j = 0; j < (int)neighbourVector.size(); j++){
         if (fabs(neighbourVector.at(j).GetTime()*1000. - MaxPulse.GetTime()*1000.) < PTRange){
 
 	   NeighboursPulses.push_back(neighbourVector.at(j));
@@ -134,7 +134,7 @@ LAPPDPulse OpposPulse;
     if(NeighboursPulses.size()>0){
   for (int i=0; i<3; i++){
     int j=0;
-    if(j<NeighboursPulses.size()){
+    if(j<(int)NeighboursPulses.size()){
       if(i!=MaxPulse.GetChannelID())
 	{
 	SumAbove +=  (stripID[i] * NeighboursPulses.at(j).GetPeak());
@@ -158,7 +158,7 @@ LAPPDPulse OpposPulse;
     {
       for(int i =0; i<3; i++){
 	if(i!=MaxPulse.GetChannelID() && i!=OpposPulse.GetChannelID()){
-	  for (int j = 0; j < LAPPDPulseCluster.at(i).size(); j++){
+	  for (int j = 0; j < (int)LAPPDPulseCluster.at(i).size(); j++){
 	    if (fabs(LAPPDPulseCluster.at(i).at(j).GetTime()*1000. - MaxPulse.GetTime()*1000.) < PTRange){
 	       NeighboursPulses.push_back(LAPPDPulseCluster.at(i).at(j));
 	     }

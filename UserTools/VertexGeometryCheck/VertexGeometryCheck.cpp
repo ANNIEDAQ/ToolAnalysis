@@ -62,7 +62,7 @@ bool VertexGeometryCheck::Execute(){
   m_data->Stores.at("ANNIEEvent")->Get("EventNumber",fEventNumber);
   
   // Only check this event
-  if(fShowEvent>0 && fEventNumber!=fShowEvent) return true; 
+  if(fShowEvent>0 && (int)fEventNumber!=fShowEvent) return true; 
   
   // check if event passes the cut
   bool EventCutstatus = false;
@@ -84,22 +84,22 @@ bool VertexGeometryCheck::Execute(){
   	return true;
   }
 	
-	// Retrive digits from RecoEvent
-	auto get_digit = m_data->Stores.at("RecoEvent")->Get("RecoDigit",fDigitList);  ///> Get digits from "RecoEvent" 
+  // Retrive digits from RecoEvent
+  auto get_digit = m_data->Stores.at("RecoEvent")->Get("RecoDigit",fDigitList);  ///> Get digits from "RecoEvent" 
   if(!get_digit){
-  	Log("VertexGeometryCheck  Tool: Error retrieving RecoDigits,no digit from the RecoEvent!",v_error,verbosity); 
-  	return true;
+    Log("VertexGeometryCheck  Tool: Error retrieving RecoDigits,no digit from the RecoEvent!",v_error,verbosity); 
+    return true;
   }
   
 	
-	double recoVtxX, recoVtxY, recoVtxZ, recoVtxT, recoDirX, recoDirY, recoDirZ;
+  double recoVtxX, recoVtxY, recoVtxZ, recoVtxT, recoDirX, recoDirY, recoDirZ;
   double trueVtxX, trueVtxY, trueVtxZ, trueVtxT, trueDirX, trueDirY, trueDirZ;
   double digitX, digitY, digitZ, digitT;
   double dx, dy, dz, px, py, pz, ds, cosphi, sinphi, phi, phideg;
   
   Position vtxPos = fTrueVertex->GetPosition();
-	Direction vtxDir = fTrueVertex->GetDirection();
-	trueVtxX = vtxPos.X();
+  Direction vtxDir = fTrueVertex->GetDirection();
+  trueVtxX = vtxPos.X();
   trueVtxY = vtxPos.Y();
   trueVtxZ = vtxPos.Z();
   trueVtxT = fTrueVertex->GetTime();
@@ -173,7 +173,7 @@ bool VertexGeometryCheck::Execute(){
 }
 
 bool VertexGeometryCheck::Finalise(){
-	fOutput_tfile->cd();
+  fOutput_tfile->cd();
   fOutput_tfile->Write();
   fOutput_tfile->Close();
   Log("VertexGeometryCheck exitting", v_debug,verbosity);

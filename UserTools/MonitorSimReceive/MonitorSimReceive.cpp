@@ -103,10 +103,10 @@ bool MonitorSimReceive::Execute(){
     } 
     else if (mode == "FileList"){
     std::string datapath;
-    if (i_loop<vec_filename.size()){
+    if (i_loop<(int)vec_filename.size()){
       datapath = vec_filename.at(i_loop);
       if (verbosity > 2) std::cout <<"Current file: "<<datapath<<std::endl;
-      if (i_loop == vec_filename.size()-1) m_data->vars.Set("StopLoop",true);
+      if (i_loop == (int)vec_filename.size()-1) m_data->vars.Set("StopLoop",true);
     } else {
       m_data->vars.Set("StopLoop",true);
       if (indata!=0){ indata->Close(); indata->Delete(); delete indata; indata = 0;}

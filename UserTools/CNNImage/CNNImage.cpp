@@ -113,7 +113,7 @@ bool CNNImage::Execute(){
   bool bool_nhits=false;
 
   if (verbosity > 1) std::cout <<"Loop through MCParticles..."<<std::endl;
-  for(int particlei=0; particlei<mcparticles->size(); particlei++){
+  for(int particlei=0; particlei<(int)mcparticles->size(); particlei++){
     MCParticle aparticle = mcparticles->at(particlei);
     if (verbosity > 1) std::cout <<"particle "<<particlei<<std::endl;
     if (verbosity > 1) std::cout <<"Parent ID: "<<aparticle.GetParentPdg()<<std::endl;
@@ -179,7 +179,7 @@ bool CNNImage::Execute(){
   max_time_pmts = 0;
   min_time_pmts = 999.;
   total_charge_pmts = 0;
-  for (int i_pmt=0;i_pmt<hitpmt_detkeys.size();i_pmt++){
+  for (int i_pmt=0;i_pmt<(int)hitpmt_detkeys.size();i_pmt++){
     unsigned long detkey = hitpmt_detkeys[i_pmt];
     if (charge[detkey]>maximum_pmts) maximum_pmts = charge[detkey];
     total_charge_pmts+=charge[detkey];

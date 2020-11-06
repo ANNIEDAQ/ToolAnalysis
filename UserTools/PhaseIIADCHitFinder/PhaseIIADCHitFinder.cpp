@@ -379,7 +379,7 @@ bool PhaseIIADCHitFinder::build_pulse_and_hit_map(
   HitsOnPMT = this->convert_adcpulses_to_hits(channel_key,pulse_vec);
   Log("PhaseIIADCHitFinder: Filling hit map.",
       v_debug, verbosity);
-  for(int j=0; j < HitsOnPMT.size(); j++){
+  for(int j=0; j < (int) HitsOnPMT.size(); j++){
     Hit ahit = HitsOnPMT.at(j);
     if(hmap.count(channel_key)==0) hmap.emplace(channel_key, std::vector<Hit>{ahit});
     else hmap.at(channel_key).push_back(ahit);
@@ -408,7 +408,7 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bywindow(
   
   std::vector<ADCPulse> pulses;
 
-  for(int i = 0; i<adc_windows.size();i++){
+  for(int i = 0; i<(int)adc_windows.size();i++){
     // Integrate the pulse to get its area. Use a Riemann sum. Also get
     // the raw amplitude (maximum ADC value within the pulse) and the
     // sample at which the peak occurs.
@@ -523,8 +523,8 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bythreshold(
     for (size_t s = 0; s < num_samples; ++s) {
       in_pulse = false;
       //check if sample is within an already defined window
-      for (int i=0; i< window_starts.size(); i++){
-        if ((s>window_starts.at(i)) && (s<window_ends.at(i))){
+      for (int i=0; i< (int) window_starts.size(); i++){
+        if (((int)s>window_starts.at(i)) && ((int)s<window_ends.at(i))){
           in_pulse = true;
           if(verbosity>4) std::cout << "PhaseIIADCHitFinder: FOUND PULSE" << std::endl;
         }
@@ -536,14 +536,14 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bythreshold(
         }
     }
     //If any pulse crosses the sampling window, restrict it's value to within window
-    for (int j=0; j<window_starts.size(); j++){
+    for (int j=0; j < (int) window_starts.size(); j++){
       if (window_starts.at(j) < 0) window_starts.at(j) = 0;
       if (window_ends.at(j) > static_cast<int>(num_samples)) window_ends.at(j) = static_cast<int>(num_samples)-1;
     }
     // Integrate the pulse to get its area. Use a Riemann sum. Also get
     // the raw amplitude (maximum ADC value within the pulse) and the
     // sample at which the peak occurs.
-    for (int i = 0; i< window_starts.size(); i++){
+    for (int i = 0; i < (int) window_starts.size(); i++){
       size_t pulse_start_sample = static_cast<size_t>(window_starts.at(i));
       size_t pulse_end_sample = static_cast<size_t>(window_ends.at(i));
       unsigned long raw_area = 0; // ADC * samples
@@ -655,9 +655,9 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bythreshold(
 
 std::vector<Hit> PhaseIIADCHitFinder::convert_adcpulses_to_hits(unsigned long channel_key,std::vector<std::vector<ADCPulse>> pulses){
   std::vector<Hit> thispmt_hits;
-  for(int i=0; i < pulses.size(); i++){
+  for(int i=0; i < (int) pulses.size(); i++){
     std::vector<ADCPulse> apulsevector = pulses.at(i);
-    for(int j=0; j < apulsevector.size(); j++){
+    for(int j=0; j < (int) apulsevector.size(); j++){
       ADCPulse apulse = apulsevector.at(j);
       //Get the time and charge
       double time = apulse.peak_time();

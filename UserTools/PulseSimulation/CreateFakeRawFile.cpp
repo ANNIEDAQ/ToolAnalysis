@@ -189,7 +189,7 @@ void PulseSimulation::FillInitialFileInfo(){
 	// ===================================================================================
 	Log("PulseSimulation Tool: Constructing CardData entries",v_debug,verbosity);
 	// fill all the non-minibuffer info and reset the minibuffers
-	if(emulated_pmtdata_readout.size()<num_adc_cards){
+	if((int)emulated_pmtdata_readout.size()<num_adc_cards){
 //		cout<<"constructing vector of "<<num_adc_cards<<" CardData objects"
 //			<<" and temp databuffer vector with "<<full_buffer_size<<" element data arrays"<<endl;
 		emulated_pmtdata_readout= std::vector<MCCardData>(num_adc_cards);
@@ -221,7 +221,7 @@ void PulseSimulation::FillEmulatedRunInformation(){
 	std::vector<std::string>* TemplateInfoMessages = GetTemplateRunInfo();
 	
 	if(GenerateFakeRootFiles){
-		for(int entryi=0; entryi<InfoTitles.size(); entryi++){
+		for(int entryi=0; entryi<(int)InfoTitles.size(); entryi++){
 			fileout_InfoTitle=InfoTitles.at(entryi);
 			fileout_InfoMessage=TemplateInfoMessages->at(entryi);
 			tRunInformation->Fill();

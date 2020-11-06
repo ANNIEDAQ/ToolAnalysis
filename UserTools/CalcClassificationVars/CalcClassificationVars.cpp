@@ -473,7 +473,8 @@ void CalcClassificationVars::ClassificationVarsPMTLAPPD(){
 		double digitQ = thisdigit.GetCalCharge();
 		double digitT = thisdigit.GetCalTime();
 		double detDist, detTheta, detPhi;
-		double MCdetDist, MCdetTheta;
+		double MCdetDist=0.;
+		double MCdetTheta;
 		int digitID = thisdigit.GetDetectorID();
 			
 		if (isData){

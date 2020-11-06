@@ -171,7 +171,7 @@ bool MrdPaddleEfficiencyPreparer::Execute(){
 					std::vector<Int_t> truetrackpdgs;
 					m_data->CStore.Get("TrueTrackVertices",truetrackvertices);
 					m_data->CStore.Get("TrueTrackPDGs",truetrackpdgs);
-					for (int i=0; i< truetrackvertices.size(); i++){
+					for (int i=0; i< (int) truetrackvertices.size(); i++){
 						if (i==0) continue; 	//first vertex is not saved correctly
 						Position startvertex = truetrackvertices.at(i).first;
 						Position stopvertex = truetrackvertices.at(i).second;
@@ -192,7 +192,7 @@ bool MrdPaddleEfficiencyPreparer::Execute(){
 
 				if (PMTsHit.size() < 50 ){
 
-					for (int i_layer = 0; i_layer < zLayers.size(); i_layer++){
+					for (int i_layer = 0; i_layer < (int) zLayers.size(); i_layer++){
 						
 						// Exclude first and layer from efficiency determination						
 						if (i_layer == 0 || i_layer == int(zLayers.size()) -1) continue;

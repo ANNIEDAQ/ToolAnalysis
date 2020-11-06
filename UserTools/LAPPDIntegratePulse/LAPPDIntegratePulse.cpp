@@ -44,7 +44,7 @@ bool LAPPDIntegratePulse::Execute(){
 
     //loop over all Waveforms
     vector<double> acharge;
-    for(int i=0; i<Vwavs.size(); i++){
+    for(int i=0; i<(int)Vwavs.size(); i++){
 
         Waveform<double> bwav = Vwavs.at(i);
 
@@ -84,7 +84,7 @@ double LAPPDIntegratePulse::CalcIntegral(Waveform<double> hwav, double lowR, dou
 
   double tQ=0.;
 
-  if( (lowb>=0) && (hib<hwav.GetSamples()->size()) ){
+  if( (lowb>=0) && (hib<(int)hwav.GetSamples()->size()) ){
     for(int i=lowb; i<hib; i++){
       tQ+=((-hwav.GetSample(i))*Deltat);
     }

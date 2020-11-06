@@ -79,7 +79,7 @@ bool TriggerDataDecoder::Execute(){
         if(UseTrigMask){
           uint32_t recent_trigger_word = processed_sources.back();
           for(int j = 0; j<(int) TriggerMask.size(); j++){
-            if(TriggerMask.at(j) == recent_trigger_word){
+            if(TriggerMask.at(j) == (int) recent_trigger_word){
               m_data->CStore.Set("NewCTCDataAvailable",true);
               if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
               TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());
@@ -113,7 +113,7 @@ bool TriggerDataDecoder::Execute(){
           if(UseTrigMask){
             uint32_t recent_trigger_word = processed_sources.back();
             for(int j = 0; j<(int) TriggerMask.size(); j++){
-              if(TriggerMask.at(j) == recent_trigger_word){
+              if(TriggerMask.at(j) == (int) recent_trigger_word){
                 m_data->CStore.Set("NewCTCDataAvailable",true);
                 if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
                 TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());

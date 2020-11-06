@@ -409,7 +409,7 @@ bool MrdDiscriminatorScan::CountChannelHits(BoostStore* MRDData, std::map<int,st
 	Log(logmessage,v_debug,verbosity);
 	
 	// loop over the readouts
-	for (int readouti = 0; readouti <  total_number_entries; readouti++){
+	for (int readouti = 0; readouti <  (int) total_number_entries; readouti++){
 		
 		MRDData->GetEntry(readouti);       // MRDData is a multi-entry BoostStore: load the next event
 		MRDOut mrdReadout;                 // class defined in the DataModel to contain an MRD readout
@@ -424,7 +424,7 @@ bool MrdDiscriminatorScan::CountChannelHits(BoostStore* MRDData, std::map<int,st
 		ULong64_t timestamp = mrdReadout.TimeStamp;
 		TimeClass timestampclass(timestamp*1000*1000);                            // [ms] to [ns]
 		if(readouti==0) first_timestamp = timestampclass;                         // [ms] to [s]
-		if(readouti==(total_number_entries-1)) last_timestamp = timestampclass;   // [ms] to [s]
+		if(readouti==(int)(total_number_entries-1)) last_timestamp = timestampclass;   // [ms] to [s]
 		
 		// we don't actually care about the times of the hits, we just want to count how many there were
 		// so just for interest
@@ -434,7 +434,7 @@ bool MrdDiscriminatorScan::CountChannelHits(BoostStore* MRDData, std::map<int,st
 		}
 		
 		// loop over all hits in this readout
-		for (int hiti = 0; hiti < mrdReadout.Slot.size(); hiti++){
+		for (int hiti = 0; hiti < (int)mrdReadout.Slot.size(); hiti++){
 			
 			// get the channel info
 			int crate_num = mrdReadout.Crate.at(hiti);

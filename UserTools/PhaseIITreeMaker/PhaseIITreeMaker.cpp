@@ -379,13 +379,13 @@ bool PhaseIITreeMaker::Execute(){
     }
     
     int cluster_num = 0;
-    for (int i=0; i<MrdTimeClusters.size(); i++){
+    for (int i=0; i<(int)MrdTimeClusters.size(); i++){
       Log("PhaseIITreeMaker Tool: Resetting variables prior to getting MRD cluster info",v_debug,verbosity);
       this->ResetVariables();
       fMRDClusterHits = 0;
       fVetoHit = TrigHasVetoHit;
       std::vector<int> ThisClusterIndices = MrdTimeClusters.at(i);
-      for(int j=0;j<ThisClusterIndices.size(); j++){
+      for(int j=0;j<(int)ThisClusterIndices.size(); j++){
         fMRDHitT.push_back(mrddigittimesthisevent.at(ThisClusterIndices.at(j)));
         fMRDHitDetID.push_back(mrddigitpmtsthisevent.at(ThisClusterIndices.at(j)));
         fMRDClusterHits+=1;
@@ -447,7 +447,7 @@ bool PhaseIITreeMaker::Execute(){
         std::cout << "BeamClusterAnalysis tool: No MRD clusters found.  Will be no tracks." << std::endl;
         return false;
       }
-      for(int i=0; i < MrdTimeClusters.size(); i++) fNumClusterTracks += this->LoadMRDTrackReco(i);
+      for(int i=0; i < (int) MrdTimeClusters.size(); i++) fNumClusterTracks += this->LoadMRDTrackReco(i);
     }
 
     bool got_reco = false;
@@ -653,7 +653,7 @@ void PhaseIITreeMaker::LoadTankClusterHits(std::vector<Hit> cluster_hits){
   fClusterCharge = 0;
   fClusterPE = 0;
   fClusterHits = 0;
-  for (int i = 0; i<cluster_hits.size(); i++){
+  for (int i = 0; i<(int)cluster_hits.size(); i++){
     int channel_key = cluster_hits.at(i).GetTubeId();
     std::map<int, double>::iterator it = ChannelKeyToSPEMap.find(channel_key);
     if(it != ChannelKeyToSPEMap.end()){ //Charge to SPE conversion is available
@@ -739,7 +739,7 @@ void PhaseIITreeMaker::LoadAllMRDHits(){
       unsigned long detkey = thedetector->GetDetectorID();
       if(thedetector->GetDetectorElement()=="Veto") fVetoHit=1; // this is a veto hit, not an MRD hit.
       std::vector<Hit> mrdhits = anmrdpmt.second;
-      for(int j = 0; j<mrdhits.size(); j++){
+      for(int j = 0; j<(int)mrdhits.size(); j++){
         fMRDHitT.push_back(mrdhits.at(j).GetTime());
         fMRDHitDetID.push_back(mrdhits.at(j).GetTubeId());
       }

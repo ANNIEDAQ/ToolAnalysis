@@ -182,7 +182,7 @@ Waveform<double> LAPPDresponse::GetTrace(int CHnumber, double starttime, double 
 
     //if there are pulses on the strip, loop over the N pulses on that strip
 	std::vector<LAPPDPulse> tempoVector = LAPPDPulseCluster.at(CHnumber);   //SD
-    for(int k=0; k<tempoVector.size(); k++){           //SD
+    for(int k=0; k<(int)tempoVector.size(); k++){           //SD
       //  for(int k=0; k<4; k++){
 
 

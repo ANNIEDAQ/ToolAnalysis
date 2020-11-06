@@ -223,6 +223,7 @@ bool DataSummary::LoadNextANNIEEventEntry(){
 		return ANNIEEvent->GetEntry(localentry);
 	} // else no more ANNIEEvents, but we didn't load a new file
 	  // because there are still Orphans to process
+	return false;
 }
 
 bool DataSummary::LoadNextOrphanStoreEntry(){
@@ -243,6 +244,7 @@ bool DataSummary::LoadNextOrphanStoreEntry(){
 		return OrphanStore->GetEntry(localorphan);
 	} // else no more orphans, but we didn't load a new file
 	  // because there are still ANNIEEvents to process
+	return false;
 }
 
 bool DataSummary::LoadNextFile(){
@@ -300,10 +302,10 @@ bool DataSummary::LoadNextFile(){
 		return false;
 	}
 	ANNIEEvent->Get("RunNumber",RunNumber);
-	if(RunNumber!=run)
+	if((int)RunNumber!=run)
 		Log("DataSummary Tool: filename / entry mismatch for RunNumber!",v_error,verbosity);
 	ANNIEEvent->Get("SubrunNumber",SubrunNumber);
-	if(SubrunNumber!=subrun)
+	if((int)SubrunNumber!=subrun)
 		Log("DataSummary Tool: filename / entry mismatch for SubrunNumber!",v_error,verbosity);
 	// TODO... handle these errors? We should have an error log file.
 	PartNumber=part; // not stored so assume it's the same
@@ -356,6 +358,7 @@ bool DataSummary::CreateOutputFile(){
 	outtree2->Branch("OrphanedEventType",&orphantype);
 	outtree2->Branch("OrphanTimestamp",&orphantimestamp);
 	outtree2->Branch("OrphanCause",&orphancause);
+	return true;
 }
 
 bool DataSummary::CreatePlots(){
@@ -379,7 +382,7 @@ bool DataSummary::CreatePlots(){
 	AddTDiffPlots();
 	//AddTDiffPlots(30,30,0.5,"CtcToMrdTDiff");
 	//AddTDiffPlots(30,30,0.5,"TankToMrdTDiff");
-	
+	return true;	
 }
 
 // just histograms of timestamps of a given type with a time axis
@@ -436,7 +439,7 @@ bool DataSummary::AddRatePlots(int nbins){
 	allsystems_rate->GetXaxis()->SetLabelSize(0.03);
 	noloopback_rate->GetXaxis()->SetLabelSize(0.03);
 	orphan_rate->GetXaxis()->SetLabelSize(0.03);
-	
+	return true;	
 }
 
 // TODO refactor to break up plot types and remove triplets of calls
@@ -530,7 +533,7 @@ bool DataSummary::AddTDiffPlots(){
 	tank_ctc_ts.reserve(tank_ctc_diff_vals.size()/(overlap_fraction*window_size));
 	int start_sample=0;
 	int step_size = window_size*overlap_fraction;
-	for(int i=0; i<tank_ctc_diff_vals.size(); ++i){
+	for(int i=0; i<(int)tank_ctc_diff_vals.size(); ++i){
 		ComputeMeanAndVariance(tank_ctc_diff_vals, mean_ctc_to_tank, var_ctc_to_tank, window_size, start_sample);
 		tank_ctc_means.push_back(mean_ctc_to_tank);
 		tank_ctc_vars.push_back(var_ctc_to_tank);
@@ -547,5 +550,6 @@ bool DataSummary::AddTDiffPlots(){
 //	ComputeMeanAndVariance(ctc_to_tank_vals, mean_ctc_to_tank, var_ctc_to_tank, window_size);
 	
 	// 5. you could also make a normalized histogram at each step to make a colour band plot
+	return true;
 	
 }

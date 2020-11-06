@@ -72,9 +72,9 @@ class MCLAPPDHit : public LAPPDHit{
 		cout<<"Charge : "<<Charge<<endl;
 		if(Parents.size()){
 			cout<<"Parent MCPartice indices: {";
-			for(int parenti=0; parenti<Parents.size(); ++parenti){
+			for(int parenti=0; parenti<(int)Parents.size(); ++parenti){
 				cout<<Parents.at(parenti);
-				if((parenti+1)<Parents.size()) cout<<", ";
+				if((parenti+1)<(int)Parents.size()) cout<<", ";
 			}
 			cout<<"}"<<endl;
 		} else {

@@ -212,7 +212,7 @@ bool LAPPDSim::Execute()
 			response.Initialise(_tf);
 
 			//loop over the hits on each lappd
-			for (int j = 0; j < mchits.size(); j++)
+			for (int j = 0; j < (int) mchits.size(); j++)
 			{
 				LAPPDHit ahit = mchits.at(j);
 				//Time is in [ns], we need [ps] for the LAPPDrespnse class' methods.

@@ -68,7 +68,7 @@ bool SimpleTankEnergyCalibrator::Execute(){
   //Get beam window hits 
   std::vector<Hit> BeamHits = this->GetInWindowHits();
   if(verbosity>3) std::cout << "SimpleTankEnergyCalculator Tool: Hit count is " << BeamHits.size() << std::endl;
-  if(BeamHits.size() < TankNHitThreshold){
+  if((int)BeamHits.size() < TankNHitThreshold){
     if(verbosity>3) std::cout << "SimpleTankEnergyCalculator Tool: Hit count " << BeamHits.size() << " not over threshold" << std::endl;
     PassesCriteria = false;
   }
@@ -189,7 +189,7 @@ std::vector<Hit> SimpleTankEnergyCalibrator::GetInWindowHits(){
   for(std::pair<unsigned long, std::vector<Hit>>&& apair : *Hits){
     unsigned long chankey = apair.first;
     std::vector<Hit> ThisTubeHits = apair.second;
-    for(int i=0; i<ThisTubeHits.size(); i++){
+    for(int i=0; i<(int)ThisTubeHits.size(); i++){
       Hit ahit = ThisTubeHits.at(i);
       double hittime = ahit.GetTime();
       if((hittime > TankBeamWindowStart) && (hittime < TankBeamWindowEnd)) BeamHits.push_back(ahit);
@@ -200,7 +200,7 @@ std::vector<Hit> SimpleTankEnergyCalibrator::GetInWindowHits(){
 
 double SimpleTankEnergyCalibrator::GetTotalQ(std::vector<Hit> AllHits){
   double TotalCharge = 0;
-  for (int i = 0; i<AllHits.size(); i++){
+  for (int i = 0; i<(int)AllHits.size(); i++){
     Hit ahit = AllHits.at(i);
     double ThisHitCharge = ahit.GetCharge();
     TotalCharge+=ThisHitCharge;
@@ -210,7 +210,7 @@ double SimpleTankEnergyCalibrator::GetTotalQ(std::vector<Hit> AllHits){
 
 double SimpleTankEnergyCalibrator::GetTotalPE(std::vector<Hit> AllHits){
   double TotalPE = 0;
-  for (int i = 0; i<AllHits.size(); i++){
+  for (int i = 0; i<(int)AllHits.size(); i++){
     Hit ahit = AllHits.at(i);
     double ThisHitCharge = ahit.GetCharge();
     int ThisHitID = ahit.GetTubeId();

@@ -357,7 +357,7 @@ if your class contains pointers, use TrackArray.Clear("C"). You MUST then provid
 	Log("FindMrdTracks tool: Writing MRD tracks to MRDTracks BoostStore",v_debug,verbosity);
 	m_data->Stores["MRDTracks"]->Set("NumMrdSubEvents",nummrdsubeventsthisevent);
 	m_data->Stores["MRDTracks"]->Set("NumMrdTracks",nummrdtracksthisevent);
-	if(nummrdtracksthisevent>theMrdTracks->size()){
+	if(nummrdtracksthisevent>(int)theMrdTracks->size()){
 		Log("FindMrdTracks tool: Growing theMrdTracks vector to size "+std::to_string(nummrdtracksthisevent),v_debug,verbosity);
 		theMrdTracks->resize(nummrdtracksthisevent);
 	}

@@ -123,7 +123,7 @@ bool LoadANNIEEvent::Execute() {
      m_data->CStore.Set("UserEvent",false);
      int user_evnum;
      m_data->CStore.Get("LoadEvNr",user_evnum);
-     if (user_evnum < total_entries_in_file_ && user_evnum >=0) current_entry_ = user_evnum;
+     if (user_evnum < (int) total_entries_in_file_ && user_evnum >=0) current_entry_ = user_evnum;
    }
 
   Log("ANNIEEvent store has "+std::to_string(total_entries_in_file_)+" entries",v_debug,verbosity_);
@@ -131,7 +131,7 @@ bool LoadANNIEEvent::Execute() {
     " ANNIEEvent input file \"" + input_filenames_.at(current_file_)
     + '\"', 1, verbosity_);
  
-  if (current_entry_ != offset_evnum) m_data->Stores["ANNIEEvent"]->Delete();	//ensures that we can access pointers without problems
+  if ((int)current_entry_ != offset_evnum) m_data->Stores["ANNIEEvent"]->Delete();	//ensures that we can access pointers without problems
 
   m_data->Stores["ANNIEEvent"]->GetEntry(current_entry_);  
   ++current_entry_;

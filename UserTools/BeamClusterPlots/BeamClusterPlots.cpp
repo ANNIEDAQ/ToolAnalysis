@@ -88,7 +88,7 @@ bool BeamClusterPlots::Execute(){
     double cluster_PE = 0;
     double num_hits = 0;
     std::vector<Hit> cluster_hits = cluster_pair.second;
-    for (int i = 0; i<cluster_hits.size(); i++){
+    for (int i = 0; i<(int)cluster_hits.size(); i++){
       int hit_ID = cluster_hits.at(i).GetTubeId();
       std::map<int, double>::iterator it = ChannelKeyToSPEMap.find(hit_ID);
       if(it != ChannelKeyToSPEMap.end()){ //Charge to SPE conversion is available
@@ -140,13 +140,13 @@ bool BeamClusterPlots::Execute(){
   //Then, make multiplicity histograms
   if(max_prompt_clusterPE>PromptPEMin){
     hist_prompt_delayed_multiplicity->Fill(delayed_cluster_times.size()); 
-    for(int j = 0; j< delayed_cluster_times.size(); j++){
+    for(int j = 0; j< (int) delayed_cluster_times.size(); j++){
       hist_prompt_delayed_deltat->Fill(delayed_cluster_times.at(j) - max_prompt_clustertime);
     }
 
     hist_prompt_neutron_multiplicity->Fill(delayed_ncandidate_times.size()); 
     hist_prompt_neutron_multiplicityvstankE->Fill(delayed_ncandidate_times.size(),max_prompt_clusterPE/PEPerMeV); 
-    for(int j = 0; j< delayed_ncandidate_times.size(); j++){
+    for(int j = 0; j< (int) delayed_ncandidate_times.size(); j++){
       hist_prompt_neutron_deltat->Fill(delayed_ncandidate_times.at(j) - max_prompt_clustertime);
     }
   }

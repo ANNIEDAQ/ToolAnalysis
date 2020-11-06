@@ -40,7 +40,7 @@ public:
 		if(filled) cout << "Number of components: " << component_times.size() << endl;
 		if(verbose){
 			cout<<"Times and scales:" << endl;
-			for(int i = 0; i < component_times.size(); i++){
+			for(int i = 0; i < (int) component_times.size(); i++){
 				cout << component_times.at(i) << ", " << component_scales.at(i) << endl;
 			}
 		}

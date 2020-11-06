@@ -47,7 +47,7 @@ bool LAPPDFindPeak::Execute(){
 
     //loop over all Waveforms
     std::vector<LAPPDPulse> thepulses;
-    for(int i=0; i<Vwavs.size(); i++){
+    for(int i=0; i < (int) Vwavs.size(); i++){
 
         Waveform<double> bwav = Vwavs.at(i);
         thepulses = FindPulses_TOT(bwav.GetSamples());

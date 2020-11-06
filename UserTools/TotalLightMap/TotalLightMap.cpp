@@ -214,7 +214,7 @@ bool TotalLightMap::Execute(){
 	bool mufound=false;
 	if(MCParticles){
 		Log("TotalLightMap Tool: Num MCParticles = "+to_string(MCParticles->size()),v_message,verbosity);
-		for(int particlei=0; particlei<MCParticles->size(); particlei++){
+		for(int particlei=0; particlei<(int)MCParticles->size(); particlei++){
 			MCParticle aparticle = MCParticles->at(particlei);
 			aparticle.SetParticleID(particlei);  // override WCSim 'TrackID' with index in MCParticles XXX
 			// Selection criteria pick out particle(s) of interest
@@ -687,7 +687,7 @@ void TotalLightMap::make_pmt_markers(MCParticle primarymuon){
 		// ==============================================
 		// first cumulative light split by parent
 		double totchargenotfrommuon=0;
-		for(int parenti=1; parenti<(chargesfromparents.size()-1); parenti++){
+		for(int parenti=1; parenti<((int)chargesfromparents.size()-1); parenti++){
 			totchargenotfrommuon+=chargesfromparents.at(parenti);
 		}
 		// we'll actually use the in-built ROOT 'Mercator' projection, which is available for TH1s
@@ -1035,7 +1035,7 @@ void TotalLightMap::DrawMarkers(){
 	
 	// draw the pmt markers
 	Log("TotalLightMap Tool: drawing "+to_string(marker_pmts_top.size())+" top cap PMT markers",v_debug,verbosity);
-	for (int i_marker=0;i_marker<marker_pmts_top.size();i_marker++){
+	for (int i_marker=0;i_marker<(int)marker_pmts_top.size();i_marker++){
 		TPolyMarker* marker = marker_pmts_top.at(i_marker);
 		double colour_marker_temp = 254.*((double(marker->GetMarkerColor())-colour_offset)/colour_full_scale);
 		color_marker = int(colour_marker_temp);
@@ -1049,7 +1049,7 @@ void TotalLightMap::DrawMarkers(){
 		marker->Draw();
 	}
 	Log("TotalLightMap Tool: drawing "+to_string(marker_pmts_bottom.size())+" bottom cap PMT markers",v_debug,verbosity);
-	for (int i_marker=0;i_marker<marker_pmts_bottom.size();i_marker++){
+	for (int i_marker=0;i_marker<(int)marker_pmts_bottom.size();i_marker++){
 		TPolyMarker* marker = marker_pmts_bottom.at(i_marker);
 		double colour_marker_temp = 254.*((double(marker->GetMarkerColor())-colour_offset)/colour_full_scale);
 		color_marker = int(colour_marker_temp);
@@ -1063,7 +1063,7 @@ void TotalLightMap::DrawMarkers(){
 		marker->Draw();
 	}
 	Log("TotalLightMap Tool: drawing "+to_string(marker_pmts_wall.size())+" barrel PMT markers",v_debug,verbosity);
-	for (int i_marker=0;i_marker<marker_pmts_wall.size();i_marker++){
+	for (int i_marker=0;i_marker<(int)marker_pmts_wall.size();i_marker++){
 		TPolyMarker* marker = marker_pmts_wall.at(i_marker);
 		double colour_marker_temp = 254.*((double(marker->GetMarkerColor())-colour_offset)/colour_full_scale);
 		color_marker = int(colour_marker_temp);
@@ -1079,7 +1079,7 @@ void TotalLightMap::DrawMarkers(){
 	
 	// draw the lappd markers
 	Log("TotalLightMap Tool: drawing "+to_string(marker_lappds.size())+" LAPPD markers",v_debug,verbosity);
-	for (int i_marker=0; i_marker<marker_lappds.size();i_marker++){
+	for (int i_marker=0; i_marker<(int)marker_lappds.size();i_marker++){
 		TPolyMarker* marker = marker_lappds.at(i_marker);
 		double colour_marker_temp = 254.*((double(marker->GetMarkerColor())-colour_offset)/colour_full_scale);
 		color_marker = int(colour_marker_temp);
@@ -1089,7 +1089,7 @@ void TotalLightMap::DrawMarkers(){
 	}
 	
 	// draw the true vertex markers
-	for(int i_marker=0; i_marker<marker_vtxs.size();i_marker++){
+	for(int i_marker=0; i_marker<(int)marker_vtxs.size();i_marker++){
 		marker_vtxs.at(i_marker)->Draw();  // colour is already set based on particle type
 	}
 	
@@ -1100,7 +1100,7 @@ void TotalLightMap::DrawMarkers(){
 	// and only if it's a CC1PI event
 	lightmap_by_parent_canvas->cd();
 	
-	for(int i_marker=0; i_marker<chargemapcc1p.size();i_marker++){
+	for(int i_marker=0; i_marker<(int)chargemapcc1p.size();i_marker++){
 		TPolyMarker* marker = chargemapcc1p.at(i_marker);
 		double colour_marker_temp = 254.*((double(marker->GetMarkerColor())-colour_offset)/colour_full_scale);
 		color_marker = int(colour_marker_temp);
@@ -1117,7 +1117,7 @@ void TotalLightMap::DrawMarkers(){
 	}
 	
 	// draw the true vertex markers
-	for(int i_marker=0; i_marker<marker_vtxs.size();i_marker++){
+	for(int i_marker=0; i_marker<(int)marker_vtxs.size();i_marker++){
 		marker_vtxs.at(i_marker)->Draw();  // colour is already set based on particle type
 	}
 	

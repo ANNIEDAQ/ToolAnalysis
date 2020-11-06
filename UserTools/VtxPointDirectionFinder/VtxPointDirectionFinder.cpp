@@ -130,7 +130,7 @@ RecoVertex* VtxPointDirectionFinder::FindSimpleDirection(RecoVertex* myVertex) {
   double dx, dy, dz, ds, px, py, pz, q;
   
   RecoDigit digit;
-  for( int idigit=0; idigit<fDigitList->size(); idigit++ ){
+  for( int idigit=0; idigit < (int) fDigitList->size(); idigit++ ){
   	digit = fDigitList->at(idigit);
     if( digit.GetFilterStatus() ){ 
       q = digit.GetCalCharge();

@@ -497,9 +497,9 @@ bool TankCalibrationDiffuser::Execute(){
       int detectorkey = thistube->GetDetectorID();
       if (thistube->GetDetectorElement()=="Tank"){
         std::vector<std::vector<ADCPulse>> pulses = apair.second;
-        for (int i_minibuffer = 0; i_minibuffer < pulses.size(); i_minibuffer++){
+        for (int i_minibuffer = 0; i_minibuffer < (int) pulses.size(); i_minibuffer++){
           std::vector<ADCPulse> apulsevector = pulses.at(i_minibuffer);
-          for (int i_pulse=0; i_pulse < apulsevector.size(); i_pulse++){
+          for (int i_pulse=0; i_pulse < (int) apulsevector.size(); i_pulse++){
             ADCPulse apulse = apulsevector.at(i_pulse);
             double start_time = apulse.start_time();
             double peak_time = apulse.peak_time();
@@ -1444,12 +1444,12 @@ bool TankCalibrationDiffuser::Finalise(){
   //Histograms already deleted by closing the files ealier
 
   if (verbose > 0) std::cout <<"Deleting TBoxes..."<<std::endl;
-  for (int i_box = 0; i_box < vector_tbox.size();i_box++){
+  for (int i_box = 0; i_box < (int) vector_tbox.size();i_box++){
     delete vector_tbox.at(i_box);
   }
   
   if (verbose > 0) std::cout <<"Deleting TF1s..."<<std::endl;
-  for (int i_tf = 0; i_tf< vector_tf1.size(); i_tf++){
+  for (int i_tf = 0; i_tf < (int) vector_tf1.size(); i_tf++){
     delete vector_tf1.at(i_tf);
   } 
 

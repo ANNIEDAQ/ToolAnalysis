@@ -34,7 +34,7 @@ class TriggerData : public SerialisableObject{
   int FIFOOverflow;
   int DriverOverflow;
   ~TriggerData();
-  bool Print(){};
+  bool Print(){return true;};
   
   void  Send(zmq::socket_t *socket, int flag=0);
   bool Receive(zmq::socket_t *socket);        

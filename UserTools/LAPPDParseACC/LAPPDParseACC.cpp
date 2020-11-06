@@ -270,7 +270,7 @@ bool LAPPDParseACC::FindChannelKeyFromACDCFile(int acdc_board, int acdc_ch, unsi
     det_board = thech.GetSignalCard();
     det_ch = thech.GetSignalChannel();
     //this is the golden find, return if found. 
-    if(det_board == acdc_board and det_ch == acdc_ch)
+    if((int)det_board == acdc_board and (int)det_ch == acdc_ch)
     {
       //change the key pointer to match the found channel
       key = k;

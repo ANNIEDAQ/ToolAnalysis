@@ -71,7 +71,7 @@ bool VetoEfficiency::Initialise(std::string configfile, DataModel &data){
 			// trim the extention
 			std::string fname = outputfilename.substr(0,outputfilename.find_last_of("."));
 			// trim the path, if it contains one
-			int last_slash = fname.find_last_of("/");
+			uint last_slash = fname.find_last_of("/");
 			if(last_slash!=std::string::npos){ fname = fname.substr(last_slash+1,std::string::npos); }
 			// build our output name
 			outputfilename="veto_efficiency_"+fname+".root";
@@ -588,10 +588,10 @@ bool VetoEfficiency::Execute(){
 		found_coincidence=false;
 
 		//Check very roughly for coincidences of veto L1/L2 channels (mostly for debugging purposes)
-		for (int il1=0; il1<veto_times.size();il1++){
+		for (int il1=0; il1<(int)veto_times.size();il1++){
 			int in_layer_index = std::distance(vetol1keys.begin(),
                         std::find(vetol1keys.begin(), vetol1keys.end(), veto_chankeys.at(il1)));
-				for (int il2=0; il2<veto_times_layer2.size();il2++){
+				for (int il2=0; il2<(int)veto_times_layer2.size();il2++){
 					int in_layer_index_layer2 = std::distance(vetol2keys.begin(),
                                                         std::find(vetol2keys.begin(), vetol2keys.end(), veto_chankeys_layer2.at(il2)));
 					if (in_layer_index != in_layer_index_layer2) continue;
@@ -672,7 +672,7 @@ bool VetoEfficiency::Execute(){
 			
 			// Create coincidences object for coincidence conditions with the second layer of the veto
 			for (auto&& this_hit : veto_l2_hits){
-				for (int i_veto=0; i_veto<veto_times.size(); i_veto++){
+				for (int i_veto=0; i_veto<(int) veto_times.size(); i_veto++){
 					h_veto_delta_times->Fill(this_hit.first-veto_times.at(i_veto));
 					int in_layer_index = std::distance(vetol1keys.begin(),std::find(vetol1keys.begin(), vetol1keys.end(), veto_chankeys.at(i_veto)));	 
 					int in_layer_index_layer2 = std::distance(vetol2keys.begin(),std::find(vetol2keys.begin(), vetol2keys.end(),this_hit.second));
@@ -794,7 +794,7 @@ bool VetoEfficiency::Execute(){
 				// Require only 1 MRD layer here, can do more stringent cuts
 				// when evaulating the output file
 				if( ((acoincidence.tank_charge > min_tank_charge_) &&
-					 (acoincidence.num_unique_water_pmts > min_unique_water_pmts_)) ||
+					 ((uint) acoincidence.num_unique_water_pmts > min_unique_water_pmts_)) ||
 					((acoincidence.mrdl1hits.size() > min_mrdl1_pmts_) ||
 					 (acoincidence.mrdl2hits.size() > min_mrdl2_pmts_))
 					){
@@ -833,7 +833,7 @@ bool VetoEfficiency::Execute(){
 						int in_layer_index = std::distance(vetol1keys.begin(),
 								std::find(vetol1keys.begin(), vetol1keys.end(), al1pmt));
 						// safety check
-						if(in_layer_index>=l1_hits_L1_.size()){
+						if(in_layer_index>=(int)l1_hits_L1_.size()){
 							Log("VetoEfficiency Tool: Error! Hit on veto L1 PMT index "
 								+to_string(in_layer_index)+" is out of range!",v_error,verbosity);
 							return false;
@@ -845,7 +845,7 @@ bool VetoEfficiency::Execute(){
 						unsigned long l2_key = 1010000 + (100*in_layer_index);
 						// see if that key is in our list of L2 keys hit this event
 						if (verbosity >= v_message) std::cout <<"In-Layer-Chankey "<<in_layer_index<<" saw a hit! Check if l2_key = "<<l2_key<<" also saw something."<<std::endl;
-						for (int i_layer2=0; i_layer2<veto_l2_ids_.size(); i_layer2++){
+						for (int i_layer2=0; i_layer2<(int)veto_l2_ids_.size(); i_layer2++){
 							if (verbosity >= v_message) std::cout <<"Layer 2 hit with chankey "<<veto_l2_ids_.at(i_layer2)<<std::endl;
 						}
 						if(std::find(veto_l2_ids_.begin(),veto_l2_ids_.end(),l2_key)!=veto_l2_ids_.end()){
@@ -905,7 +905,7 @@ bool VetoEfficiency::Execute(){
 						}
 						
 						h_tdc_times->Fill(pulse_start_time_ns);
-						for(int i_veto=0; i_veto < veto_times.size(); i_veto++){
+						for(int i_veto=0; i_veto < (int) veto_times.size(); i_veto++){
 							if (std::find(vetol1keys.begin(),vetol1keys.end(),tdc_key)!=vetol1keys.end()) continue;
 							if (std::find(vetol2keys.begin(),vetol2keys.end(),tdc_key)!=vetol2keys.end()) continue;
 							h_tdc_delta_times->Fill(pulse_start_time_ns-veto_times.at(i_veto));
@@ -962,7 +962,7 @@ bool VetoEfficiency::Execute(){
 						}
 						
 						h_adc_times->Fill(pulse_start_time_ns);
-						for(int i_veto=0; i_veto < veto_times.size(); i_veto++){
+						for(int i_veto=0; i_veto < (int) veto_times.size(); i_veto++){
 						  h_adc_delta_times->Fill(pulse_start_time_ns-veto_times.at(i_veto));
 						  h_adc_delta_times_charge->Fill(pulse.charge(),pulse_start_time_ns-veto_times.at(i_veto));
 						}		
@@ -1026,7 +1026,7 @@ bool VetoEfficiency::Execute(){
 			
 			//TODO
 			for (auto&& this_hit : veto_l2_hits){
-				for (int i_veto=0; i_veto<veto_times.size(); i_veto++){
+				for (int i_veto=0; i_veto<(int)veto_times.size(); i_veto++){
 					h_veto_delta_times->Fill(this_hit.first-veto_times.at(i_veto));
 					int in_layer_index = std::distance(vetol1keys.begin(),std::find(vetol1keys.begin(), vetol1keys.end(), veto_chankeys.at(i_veto)));	 
 					int in_layer_index_layer2 = std::distance(vetol2keys.begin(),std::find(vetol2keys.begin(), vetol2keys.end(),this_hit.second));
@@ -1144,7 +1144,7 @@ bool VetoEfficiency::Execute(){
 				// for a through-going event (upstream veto requirement is always
 				// satisfied by construction), then record it to file
 				if( ((acoincidence.tank_charge > min_tank_charge_) &&
-					 (acoincidence.num_unique_water_pmts > min_unique_water_pmts_)) ||
+					 ((uint) acoincidence.num_unique_water_pmts > min_unique_water_pmts_)) ||
 					((acoincidence.mrdl1hits.size() > min_mrdl1_pmts_) ||
 					 (acoincidence.mrdl2hits.size() > min_mrdl2_pmts_))
 					){
@@ -1183,7 +1183,7 @@ bool VetoEfficiency::Execute(){
 						int in_layer_index = std::distance(vetol2keys.begin(),
 								std::find(vetol2keys.begin(), vetol2keys.end(), al2pmt));
 						// safety check
-						if(in_layer_index>=l2_hits_L2_.size()){
+						if(in_layer_index>=(int)l2_hits_L2_.size()){
 							Log("VetoEfficiency Tool: Error! Hit on veto L2 PMT index "
 								+to_string(in_layer_index)+" is out of range!",v_error,verbosity);
 							return false;
@@ -1195,7 +1195,7 @@ bool VetoEfficiency::Execute(){
 						unsigned long l1_key = 1000000 + (100*in_layer_index);
 						// see if that key is in our list of L1 keys hit this event
 						if (verbosity >= v_message) std::cout <<"In-Layer-Chankey "<<in_layer_index<<" saw a hit! Check if l1_key = "<<l1_key<<" also saw something."<<std::endl;
-						for (int i_layer1=0; i_layer1<veto_l1_ids_.size(); i_layer1++){
+						for (int i_layer1=0; i_layer1<(int)veto_l1_ids_.size(); i_layer1++){
 							if (verbosity >= v_message) std::cout <<"Layer 1 hit with chankey "<<veto_l1_ids_.at(i_layer1)<<std::endl;
 						}
 						if(std::find(veto_l1_ids_.begin(),veto_l1_ids_.end(),l1_key)!=veto_l1_ids_.end()){
@@ -1496,10 +1496,10 @@ void VetoEfficiency::LoadTDCKeys(){
 		}
 	}
 	std::cout <<"Loaded the following veto-l1 keys:"<<std::endl;
-	for (int i=0; i<vetol1keys.size(); i++){
+	for (int i=0; i<(int)vetol1keys.size(); i++){
 		std::cout <<vetol1keys.at(i)<<std::endl;
 	}
-	for (int i=0; i<vetol2keys.size(); i++){
+	for (int i=0; i<(int)vetol2keys.size(); i++){
 		std::cout <<vetol2keys.at(i)<<std::endl;
 	}
 }

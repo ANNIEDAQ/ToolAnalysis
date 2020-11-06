@@ -81,7 +81,7 @@ Position ClusterClassifiers::CalculateChargePoint(std::vector<Hit> cluster_hits)
   double tank_center_y = detector_center.Y();
   double tank_center_z = detector_center.Z();
 
-  for (int i = 0; i < cluster_hits.size(); i++){
+  for (int i = 0; i < (int) cluster_hits.size(); i++){
     Hit ahit = cluster_hits.at(i); 
     double hit_charge = ahit.GetCharge();
     int channel_key = ahit.GetTubeId();
@@ -108,7 +108,7 @@ double ClusterClassifiers::CalculateChargeBalance(std::vector<Hit> cluster_hits)
   double total_Q = 0;
   double total_QSquared = 0;
   std::map<int, double> CBMap;
-  for (int i = 0; i < cluster_hits.size(); i++){
+  for (int i = 0; i < (int)cluster_hits.size(); i++){
     Hit ahit = cluster_hits.at(i); 
     double hit_charge = ahit.GetCharge();
     int hit_ID = ahit.GetTubeId();
@@ -133,7 +133,7 @@ double ClusterClassifiers::CalculateChargeBalance(std::vector<Hit> cluster_hits)
 double ClusterClassifiers::CalculateMaxPE(std::vector<Hit> cluster_hits)
 {
   double max_PE = 0;
-  for (int i = 0; i < cluster_hits.size(); i++){
+  for (int i = 0; i < (int)cluster_hits.size(); i++){
     Hit ahit = cluster_hits.at(i); 
     double hit_charge = ahit.GetCharge();
     int channel_key = ahit.GetTubeId();

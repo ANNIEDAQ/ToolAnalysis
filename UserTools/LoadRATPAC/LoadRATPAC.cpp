@@ -115,7 +115,7 @@ bool LoadRATPAC::Execute(){
 
   if(verbosity) std::cout<<"LoadRATPAC tool: Begin the PMT loop"<<std::endl;
   //PMT loop
-  for( size_t iPMT = 0; iPMT < ds->GetMC()->GetMCPMTCount(); iPMT++ ){
+  for( int iPMT = 0; iPMT < ds->GetMC()->GetMCPMTCount(); iPMT++ ){
     if(verbosity>2) std::cout<<"getting PMT "<<iPMT<<std::endl;
     RAT::DS::MCPMT *aPMT = ds->GetMC()->GetMCPMT(iPMT);
     int tubeid = aPMT->GetID();
@@ -140,7 +140,7 @@ bool LoadRATPAC::Execute(){
 
   //LAPPD loop
   if(verbosity) std::cout<<"LoadRATPAC tool: Begin the LAPPD loop"<<std::endl;
-  for( size_t iLAPPD = 0; iLAPPD < ds->GetMC()->GetMCLAPPDCount(); iLAPPD++ ){
+  for( int iLAPPD = 0; iLAPPD < ds->GetMC()->GetMCLAPPDCount(); iLAPPD++ ){
     if(verbosity>2) std::cout<<"getting LAPPD "<<iLAPPD<<std::endl;
     RAT::DS::MCLAPPD *aLAPPD = ds->GetMC()->GetMCLAPPD(iLAPPD);
     int lappdid = aLAPPD->GetID();

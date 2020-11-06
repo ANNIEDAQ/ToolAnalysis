@@ -281,7 +281,7 @@ bool ANNIEEventBuilder::Execute(){
         myMRDMaps.MRDBeamLoopbackMap.erase(MRDTimeStamp);
         myMRDMaps.MRDCosmicLoopbackMap.erase(MRDTimeStamp);
       }
-      for(int i=0; i<BuiltTankTimes.size(); i++){
+      for(int i=0; i<(int)BuiltTankTimes.size(); i++){
         BeamTankMRDPairs.erase(BuiltTankTimes.at(i));
       }
     }
@@ -599,7 +599,7 @@ std::map<uint64_t,std::map<std::string,uint64_t>> ANNIEEventBuilder::PairCTCCosm
   
 
   //Delete CTCTimestamps that have a PMT or MRD pair from CTC timestamp tracker
-  for(int j=0;j<BuiltCTCs.size();j++){
+  for(int j=0;j<(int)BuiltCTCs.size();j++){
     if(verbosity>4) std::cout << "REMOVING CTC TIME OF " << BuiltCTCs.at(j) << "FROM CTCTIMESTAMPS VECTOR" << std::endl;
     myTimeStream.CTCTimestamps.erase(std::remove(myTimeStream.CTCTimestamps.begin(),
         myTimeStream.CTCTimestamps.end(),BuiltCTCs.at(j)), 
@@ -614,7 +614,7 @@ std::map<uint64_t,std::map<std::string,uint64_t>> ANNIEEventBuilder::PairCTCCosm
 
 void ANNIEEventBuilder::RemoveCosmics(){
   std::vector<uint64_t> MRDStampsToDelete;
-  for (int i=0;i<(myTimeStream.BeamMRDTimestamps.size()); i++) {
+  for (int i=0;i<(int)(myTimeStream.BeamMRDTimestamps.size()); i++) {
     std::string MRDTriggerType = myMRDMaps.MRDTriggerTypeMap[myTimeStream.BeamMRDTimestamps.at(i)];
     if(verbosity>4) std::cout << "THIS MRD TRIGGER TYPE IS: " << MRDTriggerType << std::endl;
     if(MRDTriggerType == "Cosmic"){
@@ -625,7 +625,7 @@ void ANNIEEventBuilder::RemoveCosmics(){
       }
     }
   }
-  for (int j=0; j<MRDStampsToDelete.size(); j++){
+  for (int j=0; j<(int)MRDStampsToDelete.size(); j++){
     myTimeStream.BeamMRDTimestamps.erase(std::remove(myTimeStream.BeamMRDTimestamps.begin(),
         myTimeStream.BeamMRDTimestamps.end(),MRDStampsToDelete.at(j)), 
         myTimeStream.BeamMRDTimestamps.end());
@@ -762,7 +762,7 @@ std::map<uint64_t,std::map<std::string,uint64_t>> ANNIEEventBuilder::MergeStream
   }
 
   //Delete myTimeStream.CTCTimestamps that have a PMT or MRD pair from CTC timestamp tracker
-  for(int j=0;j<BuiltCTCs.size();j++){
+  for(int j=0;j<(int)BuiltCTCs.size();j++){
     if(verbosity>4) std::cout << "REMOVING CTC TIME OF " << BuiltCTCs.at(j) << "FROM CTCTIMESTAMPS VECTOR" << std::endl;
     myTimeStream.CTCTimestamps.erase(std::remove(myTimeStream.CTCTimestamps.begin(),
         myTimeStream.CTCTimestamps.end(),BuiltCTCs.at(j)), 

@@ -147,7 +147,7 @@ bool TrackCombiner::Execute(){
 		m_data->Stores.at("MRDTracks")->Print(false);
 		return false;
 	}
-	if(theMrdTracks->size()<numtracksinev){
+	if((int)theMrdTracks->size()<numtracksinev){
 		Log("TrackCombiner Tool: Too few entries in MRDTracks vector relative to NumMrdTracks!",v_warning,verbosity);
 		// more is fine as we don't shrink for efficiency
 	}
@@ -432,7 +432,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 			bool added_paddle=false;
 			// scan paddles in this layer and see if we can merge them with the
 			// current cluster (if null, we'll create one from the first paddle)
-			for(int paddlei=0; paddlei<hit_paddles_this_layer.size(); ++paddlei){
+			for(int paddlei=0; paddlei<(int)hit_paddles_this_layer.size(); ++paddlei){
 				// get next hit paddle in this layer
 				Paddle* apaddle = hit_paddles_this_layer.at(paddlei);
 //				std::cout<<"checking paddle "<<paddlei<<", currentcluster is currently "<<currentcluster<<std::endl;
@@ -516,7 +516,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 			+std::string((orientationi) ? "V" : "H")+" tracks",v_debug,verbosity);
 		std::vector<MrdStub>* mrd_stubs = (orientationi) ? &mrd_stubs_v : &mrd_stubs_h;
 		// scan from layer 2+orientationi again as MRD layers number from 2
-		for(int layeri=(2+orientationi); layeri<(2+clusters_on_layers.size()); layeri+=2){
+		for(int layeri=(2+orientationi); layeri<(2+(int)clusters_on_layers.size()); layeri+=2){
 			// for first layer, make a track for every cluster
 			if(layeri==(2+orientationi)){
 				Log("TrackCombiner Tool: making tracks from clusters in first layer",v_debug,verbosity);
@@ -670,7 +670,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 			std::string orientationstring = (orientationi) ? "V" : "H";
 			double tanktrack_entrypoint = (orientationi) ? recoEventMrdEntryPoint.X() : recoEventMrdEntryPoint.Y();
 			std::vector<MrdStub>* mrd_stubs = (orientationi) ? &mrd_stubs_v : &mrd_stubs_h;
-			for(int stubi=0; stubi<mrd_stubs->size(); ++stubi){
+			for(int stubi=0; stubi<(int)mrd_stubs->size(); ++stubi){
 				MrdStub& astub = mrd_stubs->at(stubi);
 				StubCluster& firstcluster = astub.GetClusters()->front();
 				/*
@@ -848,9 +848,9 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 		if(show_all_stubs){
 			// if the number of elements in the two views are different, just re-use the last element
 			primary_h_stub_index = 
-				(mrd_stubs_h.size()<h_stub_indexes.at(stub_i)) ? (mrd_stubs_h.size()-1) : h_stub_indexes.at(stub_i);
+				((int)mrd_stubs_h.size()<h_stub_indexes.at(stub_i)) ? (mrd_stubs_h.size()-1) : h_stub_indexes.at(stub_i);
 			primary_v_stub_index = 
-				(mrd_stubs_v.size()<v_stub_indexes.at(stub_i)) ? (mrd_stubs_v.size()-1) : v_stub_indexes.at(stub_i);
+				((int)mrd_stubs_v.size()<v_stub_indexes.at(stub_i)) ? (mrd_stubs_v.size()-1) : v_stub_indexes.at(stub_i);
 		}
 		// else indices are already set, and we're only running for one loop. Nothing to do.
 		
@@ -875,7 +875,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 			std::vector<mrdcluster>* theclusters = (orientationi) ? &vtrackclusters : &htrackclusters;
 			std::vector<mrdcell>* thecells = (orientationi) ? &thevtrackcells : &thehtrackcells;
 			mrdcluster* lastcluster=nullptr;
-			for(int clusteri=0; clusteri<astub->GetClusters()->size(); ++clusteri){
+			for(int clusteri=0; clusteri<(int)astub->GetClusters()->size(); ++clusteri){
 				StubCluster& acluster = astub->GetClusters()->at(clusteri);
 				// convert the StubCluster to an mrdcluster
 				for(Paddle* apaddle : acluster.GetPaddles()){
@@ -889,7 +889,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 					double amintime = *std::min_element(hittimes.begin(),hittimes.end());
 					if(amintime<earliest_hit_time) earliest_hit_time = amintime;
 					
-					if(theclusters->size()<(clusteri+1)){
+					if((int)theclusters->size()<(clusteri+1)){
 						theclusters->emplace_back(0, wcsimtubeid-1, apaddle->GetLayer()-2, earliest_hit_time);
 					} else {
 						theclusters->back().AddDigit(0, wcsimtubeid-1, earliest_hit_time);
@@ -927,7 +927,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 //		std::cout<<"going to construct this track at "<<numtracksinev<<
 //				 <<" elements from start"<<std::endl;
 		cMRDTrack* atrack = nullptr;
-		if(numtracksinev<thesubevent->GetTracks()->size()){
+		if(numtracksinev<(int)thesubevent->GetTracks()->size()){
 			thesubevent->GetTracks()->at(numtracksinev) = cMRDTrack(
 			numtracksinev, wcsimfile, run_id, event_id, 0, trigger, digitindexes_inthistrack, tubeids_inthistrack, digitqs_inthistrack, digittimes_inthistrack, digitnumphots_inthistrack, digittruetimes_inthistrack, digittrueparents_inthistrack, thehtrackcells, thevtrackcells, htrackclusters, vtrackclusters);
 			atrack = &thesubevent->GetTracks()->at(numtracksinev);
@@ -957,7 +957,7 @@ BoostStore* TrackCombiner::FindShortMrdTracks(std::map<unsigned long,vector<doub
 		numtracksinev++;
 		
 		// checkif we need to grow the MrdTracks container
-		if(numtracksinev>theMrdTracks->size()){
+		if(numtracksinev>(int)theMrdTracks->size()){
 			Log("TrackCombiner Tool: Growing theMrdTracks vector to size "
 				+to_string(numtracksinev),v_debug,verbosity);
 			theMrdTracks->resize(numtracksinev);

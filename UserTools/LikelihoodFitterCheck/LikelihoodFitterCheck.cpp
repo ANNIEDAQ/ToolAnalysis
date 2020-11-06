@@ -52,7 +52,7 @@ bool LikelihoodFitterCheck::Execute(){
   m_data->Stores.at("ANNIEEvent")->Get("EventNumber",fEventNumber);
   
   // Only check this event
-  if(fShowEvent>0 && fEventNumber!=fShowEvent) return true; 
+  if(fShowEvent>0 && (int)fEventNumber!=fShowEvent) return true; 
   	
   logmessage = "Likelihood check for MC Entry Number " + to_string(fMCEventNum) 
                + " , MC Trigger Number" + to_string(fMCTriggerNum) 

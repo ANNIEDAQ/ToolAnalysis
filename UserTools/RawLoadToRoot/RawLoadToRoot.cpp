@@ -69,7 +69,7 @@ bool RawLoadToRoot::Execute(){
       unsigned long chank = ijk->first;
       vector<CalibratedADCWaveform<double>> calwaves = ijk->second;
 
-      for(int mmm=0; mmm<TheWaveforms.size(); mmm++){  //loop through minibuffers
+      for(int mmm=0; mmm<(int)TheWaveforms.size(); mmm++){  //loop through minibuffers
 
         CalibratedADCWaveform<double> acalwave = calwaves.at(mmm);
         double basline = acalwave.GetBaseline();
@@ -110,7 +110,7 @@ bool RawLoadToRoot::Execute(){
         double bassline = 0.;
         if(pulsize>0){
           thePulseformHist = new TH1D(puname,puname,(ttot/2),0,ttot);
-          for(int vvv=0; vvv<aWaveform.Samples().size(); vvv++){
+          for(int vvv=0; vvv<(int)aWaveform.Samples().size(); vvv++){
             //115-206 establish the dynamic baseline
             if(vvv==0){
               bassline=aWaveform.GetSample(vvv);
@@ -254,7 +254,7 @@ bool RawLoadToRoot::Execute(){
 
         if(channelnum<59&&channelnum!=57){
         ADCPulse prevpulse;
-          for(int ccc=0; ccc<somepulses.size(); ccc++){
+          for(int ccc=0; ccc<(int)somepulses.size(); ccc++){
 
             ADCPulse apulse = somepulses.at(ccc);
             if(ccc>0){prevpulse = somepulses.at(ccc-1);}

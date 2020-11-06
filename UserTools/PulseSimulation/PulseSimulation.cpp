@@ -491,7 +491,7 @@ void PulseSimulation::GenerateMinibufferPulse(int digit_index, double adjusted_d
 	//fLandau->SetRange(-10,100); only set in creation as fixed
 	for(int i=(digit_index-10); i<(digit_index+100); i++){
 		// pulses very close to the front/end of the minibuffer: get tructated.
-		if( (i<0) || (i>(pulsevector.size()-1)) ) continue;
+		if( (i<0) || (i>((int)pulsevector.size()-1)) ) continue;
 		pulsevector.at(i)=fLandau->Eval(i);
 	}
 	
@@ -659,7 +659,7 @@ bool PulseSimulation::FillEmulatedPMTData(){
 		
 		// =================
 		if(DRAW_DEBUG_PLOTS){
-			if(full_buffer_size!=acard.Data.size()){
+			if(full_buffer_size!=(int)acard.Data.size()){
 				cout<<"full_buffer_size="<<full_buffer_size
 					<<", fileout_Data.size()="<<acard.Data.size()<<endl;
 			}
@@ -669,7 +669,7 @@ bool PulseSimulation::FillEmulatedPMTData(){
 				fullbuffergraph  = new TGraph(full_buffer_size/channels_per_adc_card);
 				fullbuffergraph->SetName("fullbuffergraph");
 			}
-			for(int i=0; i<acard.Data.size(); i++){
+			for(int i=0; i<(int)acard.Data.size(); i++){
 				uint16_t theval = acard.Data.at(i);
 				fullbuffergraph->SetPoint(i,i,theval);
 				//if(theval!=0) cout<<"("<<i<<","<<theval<<")"<<", ";
@@ -821,7 +821,7 @@ void PulseSimulation::AddNoiseToWaveforms(){
 		
 		// loop over all the minibuffers in the full buffer
 		int16_t mboffset=0;
-		for(int samplei=0; samplei<temp_card_buffer.size(); samplei++){
+		for(int samplei=0; samplei<(int)temp_card_buffer.size(); samplei++){
 			// Each minibuffer has an offset of ~330 +- 20 ADC counts, distributed... well..
 			// there may be an underlying sine wave of varying amplitude, which is sorta kinda uniform..?
 			if((samplei%(full_buffer_size/minibuffers_per_fullbuffer))==0){
@@ -882,7 +882,7 @@ void PulseSimulation::RiffleShuffle(bool do_shuffle){
 				}
 			}
 		} else {
-			for(int i=0; i<temp_card_buffer.size(); i++) card_buffer.at(i)=temp_card_buffer.at(i);
+			for(int i=0; i<(int)temp_card_buffer.size(); i++) card_buffer.at(i)=temp_card_buffer.at(i);
 		}
 	}
 	// finally, ask a player to cut the deck

@@ -102,7 +102,7 @@ bool PlotLAPPDTimesFromStore::Execute(){
 	bool mufound=false;
 	if(MCParticles){
 		// MCParticles is a std::vector<MCParticle>*
-		for(int particlei=0; particlei<MCParticles->size(); particlei++){
+		for(int particlei=0; particlei<(int)MCParticles->size(); particlei++){
 			MCParticle aparticle = MCParticles->at(particlei);
 			if(aparticle.GetParentPdg()!=0) continue;      // not a primary particle
 			if(aparticle.GetPdgCode()!=13) continue;       // not a muon

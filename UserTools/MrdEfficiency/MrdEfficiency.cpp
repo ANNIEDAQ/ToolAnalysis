@@ -210,7 +210,7 @@ bool MrdEfficiency::Execute(){
 	int primarymuonid = 0;
 	if(MCParticles){
 		Log("MrdEfficiency Tool: Num MCParticles = "+to_string(MCParticles->size()),v_message,verbosity);
-		for(int particlei=0; particlei<MCParticles->size(); particlei++){
+		for(int particlei=0; particlei<(int)MCParticles->size(); particlei++){
 			MCParticle aparticle = MCParticles->at(particlei);
 			if(aparticle.GetPdgCode()==13){
 				logmessage = "True muon found with parent type " + to_string(aparticle.GetParentPdg())
@@ -289,7 +289,7 @@ bool MrdEfficiency::Execute(){
 		m_data->Stores["MRDTracks"]->Print(false);
 		return false;
 	}
-	if(theMrdTracks->size()<numtracksinev){
+	if((int)theMrdTracks->size()<numtracksinev){
 		cerr<<"Too few entries in MRDTracks vector relative to NumMrdTracks!"<<endl;
 		// more is fine as we don't shrink for efficiency
 	}
@@ -318,7 +318,7 @@ bool MrdEfficiency::Execute(){
 	// Produce a matrix of figures of merit for how well each reco track matches each true particle
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	std::vector<std::vector<double> > matchmerits (paddlesInTrackReco.size(), std::vector<double>(paddlesInTrackTrue.size(),0));
-	for(int recotracki=0; recotracki<paddlesInTrackReco.size(); recotracki++){
+	for(int recotracki=0; recotracki<(int)paddlesInTrackReco.size(); recotracki++){
 		// get the next reco track
 		std::map<int,std::vector<int>>::iterator arecotrack = paddlesInTrackReco.begin();
 		std::advance(arecotrack,recotracki);
@@ -330,7 +330,7 @@ bool MrdEfficiency::Execute(){
 		Log(logmessage,v_debug,verbosity);
 		
 		// scan through the true tracks and calculate FOM against this reco track
-		for(int truetracki=0; truetracki<paddlesInTrackTrue.size(); truetracki++){
+		for(int truetracki=0; truetracki<(int)paddlesInTrackTrue.size(); truetracki++){
 			// get the next true track
 			std::map<int,std::vector<int>>::iterator atruetrack = paddlesInTrackTrue.begin();
 			std::advance(atruetrack,truetracki);
@@ -346,7 +346,7 @@ bool MrdEfficiency::Execute(){
 			int num_extra_reco_paddles = 0;
 			
 			// scan over the reconstructed paddles
-			for(int arecopaddlei=0; arecopaddlei<reco_tracks_paddles.size(); arecopaddlei++){
+			for(int arecopaddlei=0; arecopaddlei<(int)reco_tracks_paddles.size(); arecopaddlei++){
 				int therecopaddleid = reco_tracks_paddles.at(arecopaddlei);
 				// see if this paddle is also in the true paddles
 				bool in_true = std::count(true_tracks_paddles.begin(),true_tracks_paddles.end(),therecopaddleid);
@@ -354,7 +354,7 @@ bool MrdEfficiency::Execute(){
 				else num_extra_reco_paddles++;
 			}
 			// scan over the true paddles
-			for(int atruepaddlei=0; atruepaddlei<true_tracks_paddles.size(); atruepaddlei++){
+			for(int atruepaddlei=0; atruepaddlei<(int)true_tracks_paddles.size(); atruepaddlei++){
 				int thetruepaddleid = true_tracks_paddles.at(atruepaddlei);
 				bool in_reco = std::count(reco_tracks_paddles.begin(),reco_tracks_paddles.end(),thetruepaddleid);
 				if(not in_reco) num_true_paddles_unmatched++;
@@ -388,7 +388,7 @@ bool MrdEfficiency::Execute(){
 	while(true){
 		double currentmax=0.;
 		int maxrow=-1, maxcolumn=-1;
-		for(int rowi=0; rowi<matchmerits.size(); rowi++){
+		for(int rowi=0; rowi<(int)matchmerits.size(); rowi++){
 			std::vector<double> therow = matchmerits.at(rowi);
 			std::vector<double>::iterator thisrowsmaxit = std::max_element(therow.begin(), therow.end());
 			if((thisrowsmaxit!=therow.end())&&((*thisrowsmaxit)>currentmax)){

@@ -87,7 +87,7 @@ bool AmBeRunStatistics::Execute(){
     h_SiPM2_PeakTime->Fill(SiPM2_MaxPulse.peak_time());
   }
 
-  double deltat, charge_ratio;
+  double deltat=0., charge_ratio=0.;
   if(SiPM1_NumPulses>0  && SiPM1_NumPulses>0){ 
     h_S1S2_Amplitudes->Fill(SiPM1_MaxPulse.amplitude(),SiPM2_MaxPulse.amplitude());
     deltat = SiPM1_MaxPulse.peak_time() - SiPM2_MaxPulse.peak_time();
@@ -139,9 +139,9 @@ bool AmBeRunStatistics::Execute(){
   h_S1S2_ChargeratioCleanPromptTrig->Fill(charge_ratio);
   h_S1S2_DeltatCleanPromptTrig->Fill(deltat);
 
-  double cluster_charge;
-  double cluster_time;
-  double cluster_PE;
+  double cluster_charge=0;
+  double cluster_time=0;
+  double cluster_PE=0;
   if(verbosity>3) std::cout << "AmBeRunStatistics Tool: looping through clusters to get cluster info now" << std::endl;
   if(verbosity>3) std::cout << "AmBeRunStatistics Tool: number of clusters: " << m_all_clusters->size() << std::endl;
   for (std::pair<double,std::vector<Hit>>&& cluster_pair : *m_all_clusters) {
@@ -149,7 +149,7 @@ bool AmBeRunStatistics::Execute(){
     cluster_time = cluster_pair.first;
     cluster_PE = 0;
     std::vector<Hit> cluster_hits = cluster_pair.second;
-    for (int i = 0; i<cluster_hits.size(); i++){
+    for (int i = 0; i < (int) cluster_hits.size(); i++){
       int hit_ID = cluster_hits.at(i).GetTubeId();
       std::map<int, double>::iterator it = ChannelKeyToSPEMap.find(hit_ID);
       if(it != ChannelKeyToSPEMap.end()){ //Charge to SPE conversion is available

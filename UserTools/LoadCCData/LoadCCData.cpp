@@ -326,7 +326,7 @@ bool LoadCCData::Execute(){
 		Log("LoadCCData Tool: Getting HeftyInfo times",v_debug,verbosity);
 		currentminibufts = eventheftyinfo.all_times();
 		int numminibuffers = eventheftyinfo.num_minibuffers();
-		if(currentminibufts.size()!=numminibuffers){
+		if((int)currentminibufts.size()!=numminibuffers){
 			Log("LoadCCData Tool: HeftyInfo mismatch between num minibuffers "
 				+ to_string(numminibuffers) + "and size of returned times vector "
 				+ to_string(currentminibufts.size()),v_error,verbosity);
@@ -434,7 +434,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 	// scan the TDC data and return all hits matching the current minibuffers
 	
 	// loop over minibuffers in this Execute() iteration
-	for(int minibufi=0; minibufi<currentminibufts.size(); minibufi++){
+	for(int minibufi=0; minibufi<(int)currentminibufts.size(); minibufi++){
 		// get this minibuffer's timestamp
 		uint64_t theminibufferTS = currentminibufts.at(minibufi);
 		if(theminibufferTS==0){
@@ -445,7 +445,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 		// minibuffer of the current readout, we need to use the timestamp of the
 		// first minibuffer from the next readout
 		uint64_t thenextminibufferTS;
-		if((minibufi+1)<currentminibufts.size()){
+		if((minibufi+1)<(int)currentminibufts.size()){
 			thenextminibufferTS = currentminibufts.at(minibufi+1);
 			if(thenextminibufferTS==0){
 				//Log("LoadCCData Tool: Event Next Minibuffer Time Is 0!",v_warning,verbosity); // don't report twice
@@ -459,7 +459,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 		if(thenextminibufferTS<theminibufferTS){
 			// get the next next minibuffer, to see where it lies
 			uint64_t nextnextminibufferTS;
-			if((minibufi+2)<currentminibufts.size()){
+			if((minibufi+2)<(int)currentminibufts.size()){
 				nextnextminibufferTS = currentminibufts.at(minibufi+2);
 			} else if(thenextminibufferTS!=nextreadoutfirstminibufstart){
 				nextnextminibufferTS=nextreadoutfirstminibufstart;
@@ -469,7 +469,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 			
 			if(thenextminibufferTS!=0){  // zero timestamps are reported separately
 				logmessage="LoadCCData Tool: Non-monotonic increase of ADC timestamps!";
-				if((minibufi+1)<currentminibufts.size()){
+				if((minibufi+1)<(int)currentminibufts.size()){
 					logmessage+= " Minibuffer "+to_string(minibufi+1);
 				} else {
 					logmessage+= " First minibuffer from next readout";
@@ -554,7 +554,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 			int64_t time_to_next_mb = thenextminibufferTS - MRDEventTime.GetNs();
 			
 			if(abs(time_to_this_mb) < abs(time_to_next_mb)){
-				if(abs(time_to_this_mb)<maxtimediff){
+				if(abs(time_to_this_mb)<(int)maxtimediff){
 					// it's a match!
 					
 					if(not (verbosity<v_debug)){
@@ -598,7 +598,7 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 					Log("LoadCCData Tool: Looping over "+to_string(numhitsthisevent)+" TDC hits",v_debug,verbosity);
 					
 					int usedhiti=0; // since trigger hits are skipped
-					for(int hiti=0; hiti<numhitsthisevent; hiti++){
+					for(int hiti=0; hiti<(int)numhitsthisevent; hiti++){
 						
 						// Get the MRD PMT ID plugged into this TDC Card + Channel
 						uint32_t tubeid;
@@ -688,8 +688,8 @@ bool LoadCCData::PerformMatching(std::vector<unsigned long long> currentminibuft
 						// add them to the debug file, so we can see what we skipped
 						UInt_t numhitsthisevent = MRDData->OutNumber;
 						int usedhiti=0; // since trigger hits are skipped
-						for(int hiti=0; hiti<numhitsthisevent; hiti++){
-							uint32_t tubeid;
+						for(int hiti=0; hiti<(int)numhitsthisevent; hiti++){
+							uint32_t tubeid=std::numeric_limits<uint32_t>::max();
 							if (map_version == "v1") tubeid = TubeIdFromSlotChannel(MRDData->Slot->at(hiti),MRDData->Channel->at(hiti),1);
                                                 	else if (map_version == "v2") tubeid = TubeIdFromSlotChannel(MRDData->Slot->at(hiti),MRDData->Channel->at(hiti),2);
 							if(tubeid==std::numeric_limits<uint32_t>::max()){ continue; }
@@ -832,7 +832,7 @@ std::vector<uint64_t> LoadCCData::ConvertTimeStamps(unsigned long long LastSync,
 					Data, TriggerCounts, Rates);
 	std::vector<uint64_t> alltimestamps;
 	// loop over all the minibuffers in the readout and retrieve their timestamps
-	for(int minibufi=0; minibufi<TriggerCounts.size(); minibufi++){
+	for(int minibufi=0; minibufi<(int)TriggerCounts.size(); minibufi++){
 		unsigned long long thetimestamp = tempcard.trigger_time(minibufi);
 		alltimestamps.push_back(thetimestamp);
 	}
@@ -843,7 +843,7 @@ uint32_t LoadCCData::TubeIdFromSlotChannel(unsigned int slot, unsigned int chann
 	// map TDC Slot + Channel into a MRD PMT Tube ID
 	uint32_t tubeid=-1;
 	uint16_t slotchan = static_cast<uint16_t>(slot*100)+static_cast<uint16_t>(channel);
-	if (slotchan !=1831 && slotchan != 1731) //std::cout <<"LoadCCData: slotchan = "<<slotchan<<std::endl;
+	if ((int)slotchan !=1831 && (int)slotchan != 1731) //std::cout <<"LoadCCData: slotchan = "<<slotchan<<std::endl;
 	if (version == 1){
 		if(slotchantopmtidv1.count(slotchan)){
 			std::string stringPMTID = "1"+slotchantopmtidv1.at(slotchan);

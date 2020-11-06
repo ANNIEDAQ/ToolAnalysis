@@ -72,7 +72,7 @@ bool WCSimDemo::Execute(){
 	bool mufound=false;
 	if(MCParticles){
 		Log("WCSimDemo Tool: Num MCParticles = "+to_string(MCParticles->size()),v_message,verbosity);
-		for(int particlei=0; particlei<MCParticles->size(); particlei++){
+		for(int particlei=0; particlei<(int)MCParticles->size(); particlei++){
 			MCParticle aparticle = MCParticles->at(particlei);
 			//if(v_debug<verbosity) aparticle.Print();       // print if we're being *really* verbose
 			if(aparticle.GetParentPdg()!=0) continue;      // not a primary particle

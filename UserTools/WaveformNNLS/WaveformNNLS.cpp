@@ -149,7 +149,7 @@ bool WaveformNNLS::Execute(){
 	else
 	{
 		Waveform<double> example_waveform = rawData[0].front();
-		for(int i = 0; i < example_waveform.GetSamples()->size(); i++)
+		for(int i = 0; i < (int) example_waveform.GetSamples()->size(); i++)
 		{
 			sampletimes.push_back(i);
 		}
@@ -261,9 +261,9 @@ void WaveformNNLS::BuildTemplateMatrix(nnlsmatrix* A, Waveform<double> tempwave,
 	//one sample further in time. The elements below the diagonal
 	//are 0, and any elements that are not part of the template
 	//are 0. 
-	for(int row = 0; row < nrows; row++)
+	for(int row = 0; row < (int) nrows; row++)
 	{
-		for(int col = 0; col < nrows; col++)
+		for(int col = 0; col < (int) nrows; col++)
 		{
 			//elements below diagonal are zero
 			if(col < row)
@@ -299,7 +299,7 @@ void WaveformNNLS::BuildWaveformVector(nnlsvector* b, Waveform<double> wave, vec
 	float t0;
 	float t1;
 	double current_time;
-	for(int j = 0; j < b->length(); j++)
+	for(int j = 0; j < (int) b->length(); j++)
 	{
 		//current time iterating through 
 		//times scaled for nnls matrix
@@ -308,7 +308,7 @@ void WaveformNNLS::BuildWaveformVector(nnlsvector* b, Waveform<double> wave, vec
 		//find value of waveform at this time by 
 		//finding closest sample times. Assumes the
 		//times vector is ordered
-		for(int i = 0; i < times.size() - 1; i++)
+		for(int i = 0; i < (int) times.size() - 1; i++)
 		{
 			t0 = times.at(i);
 			t1 = times.at(i+1);
@@ -337,7 +337,7 @@ void WaveformNNLS::SaveNNLSOutput(NnlsSolution* soln, nnlsmatrix* A, nnlsvector*
 	A->dot(false, x, bsolv); //now bsolv is the fitted vector waveform
 	//turn vector into waveform
 	Waveform<double> ff; //waveform version of nnls full (summed) solution
-	for(int i = 0; i < bsolv->length(); i++)
+	for(int i = 0; i < (int)bsolv->length(); i++)
 	{
 		ff.PushSample(bsolv->get(i));
 

@@ -453,7 +453,8 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_ze3ra_multi(
   for (const auto& raw_waveform : raw_waveforms) {
     std::vector<uint16_t> baselines;
     std::vector<size_t> RepresentationRegion;
-    double first_baseline, first_sigma_baseline;
+    double first_baseline=0;
+    double first_sigma_baseline;
     double baseline, sigma_baseline;
     const size_t nsamples = raw_waveform.Samples().size();
     for(size_t starting_sample = 0; starting_sample < nsamples; starting_sample += baseline_rep_samples){
@@ -477,7 +478,7 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_ze3ra_multi(
     std::vector<double> cal_data;
     const std::vector<unsigned short>& raw_data = raw_waveform.Samples();
     for (const auto& asample: raw_data){
-      for(int j = 0; j<RepresentationRegion.size(); j++){
+      for(int j = 0; j<(int)RepresentationRegion.size(); j++){
         if(asample < RepresentationRegion.at(j)){
           cal_data.push_back((static_cast<double>(asample) - baselines.at(j))
             * ADC_TO_VOLT);
@@ -559,7 +560,7 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_rootfit(
     
     // update our TGraph's datapoints with the new datapoints
     Log("PhaseIIADCCalibrator Tool: Setting TGraph datapoints", v_debug, verbosity);
-    for(int samplei=0; samplei<raw_data.size(); ++samplei){
+    for(int samplei=0; samplei<(int)raw_data.size(); ++samplei){
       calibrated_waveform_tgraph->SetPoint(samplei,samplei,raw_data.at(samplei));
     }
     
@@ -581,11 +582,11 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_rootfit(
     } else {
       Log("PhaseIIADCCalibrator Tool: polynomial fit of baseline succeeded, noting parameters",v_debug,verbosity);
       // make a note of the current fit parameters, in case we re-do the fit later
-      for(uint orderi=0; orderi<(baseline_fit_order+1); ++orderi){
+      for(int orderi=0; orderi<(baseline_fit_order+1); ++orderi){
         fitpars.at(orderi) = fit_result->Value(orderi);
       }
       logmessage="PhaseIIADCCalibrator Tool: Baseline fit success: fit function was: ";
-      for(uint orderi=0; orderi<(baseline_fit_order+1); ++orderi){
+      for(int orderi=0; orderi<(baseline_fit_order+1); ++orderi){
         logmessage+= to_string(fitpars.at(orderi))+"*x^"+to_string(orderi);
         if(orderi<baseline_fit_order) logmessage+=" + ";
       }
@@ -646,7 +647,7 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_rootfit(
       
       // update our TGraph's datapoints with the new datapoints
       Log("PhaseIIADCCalibrator Tool: Setting TGraph datapoints", v_debug, verbosity);
-      for(int samplei=0; samplei<cal_data.size(); ++samplei){
+      for(int samplei=0; samplei<(int)cal_data.size(); ++samplei){
         calibrated_waveform_tgraph->SetPoint(samplei,samplei,cal_data.at(samplei));
       }
       
@@ -810,7 +811,7 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_rootfit(
         Log("PhaseIIADCCalibrator Tool: polynomial re-fit of baseline failed!",v_warning,verbosity);
       } else {
         logmessage="PhaseIIADCCalibrator Tool: Baseline re-fit success: fit function was: ";
-        for(uint orderi=0; orderi<(baseline_fit_order+1); ++orderi){
+        for(int orderi=0; orderi<(baseline_fit_order+1); ++orderi){
           logmessage+= to_string(fit_result->Value(orderi))+"*x^"+to_string(orderi);
           if(orderi<baseline_fit_order) logmessage+=" + ";
         }
@@ -818,12 +819,12 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_rootfit(
         
         Log("PhaseIIADCCalibrator Tool: Combining with previous fit for final fit parameters", v_debug, verbosity);
         // get the new fit parameters and add them to the previous ones.
-        for(uint orderi=0; orderi<(baseline_fit_order+1); ++orderi){
+        for(int orderi=0; orderi<(baseline_fit_order+1); ++orderi){
           double new_parameter_val = fit_result->Value(orderi) + fitpars.at(orderi);
           calibrated_waveform_fit->SetParameter(orderi, new_parameter_val);
         }
         logmessage="PhaseIIADCCalibrator Tool: Final fit function was: ";
-        for(uint orderi=0; orderi<(baseline_fit_order+1); ++orderi){
+        for(int orderi=0; orderi<(baseline_fit_order+1); ++orderi){
           logmessage+= to_string(fit_result->Value(orderi))+"*x^"+to_string(orderi);
           if(orderi<baseline_fit_order) logmessage+=" + ";
         }
@@ -898,8 +899,8 @@ void PhaseIIADCCalibrator::make_raw_led_waveforms(unsigned long channel_key,
   //Get the windows for this channel key
   std::vector<std::vector<int>> thispmt_adc_windows;
   thispmt_adc_windows = this->get_db_windows(channel_key);
-  for(int j=0; j<raw_waveforms.size(); j++){
-    for(int i = 0; i<thispmt_adc_windows.size();i++){
+  for(int j=0; j<(int)raw_waveforms.size(); j++){
+    for(int i = 0; i<(int)thispmt_adc_windows.size();i++){
       // Make a waveform out of this subwindow, plus the number of samples
       // used for background estimation
       std::vector<int> awindow = thispmt_adc_windows.at(i);
@@ -916,7 +917,7 @@ void PhaseIIADCCalibrator::make_raw_led_waveforms(unsigned long channel_key,
       std::vector<uint16_t> led_waveform;
       //FIXME: want start time of window, not of the full raw waveform
       uint64_t start_time = raw_waveforms.at(j).GetStartTime();
-      for (size_t s = windowmin; s < windowmax; ++s) {
+      for (int s = windowmin; s < windowmax; ++s) {
         led_waveform.push_back(raw_waveforms.at(j).GetSample(s));
       }
       Waveform<uint16_t> led_rawwave{start_time,led_waveform};

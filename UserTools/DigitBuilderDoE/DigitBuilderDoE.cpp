@@ -99,7 +99,7 @@ bool DigitBuilderDoE::Execute(){
   int DigitId;
   int digitType;
   std::cout << "TOTAL DIGIT ARRAY SIZE: " << DigitIdArray->size() << std::endl;
-  for (int i=0;i<DigitIdArray->size();i++){
+  for (int i=0;i<(int)DigitIdArray->size();i++){
     if(DigitWhichDet->at(i) == "PMT8inch" && DigitCharges->at(i)>5.0){
       if((fPhotodetectorConfiguration == "PMT_only") || (fPhotodetectorConfiguration == "All")){
         //Load up a PMT RecoDigit's goods

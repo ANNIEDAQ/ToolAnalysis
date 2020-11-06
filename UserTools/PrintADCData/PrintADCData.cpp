@@ -145,9 +145,9 @@ void PrintADCData::PrintInfoInData(std::map<unsigned long, std::vector<Waveform<
     if(!isAuxData && it1!=RecoADCHits.end()){
       std::vector<std::vector<ADCPulse>> buffer_pulses = RecoADCHits.at(channel_key);
       int num_pulses = 0;
-      for (int i = 0; i < buffer_pulses.size(); i++){
+      for (int i = 0; i < (int) buffer_pulses.size(); i++){
           std::vector<ADCPulse> onebuffer_pulses = buffer_pulses.at(i);
-          for (int j = 0; j < onebuffer_pulses.size(); j++){
+          for (int j = 0; j < (int) onebuffer_pulses.size(); j++){
             ADCPulse apulse = onebuffer_pulses.at(j);
             int pulse_height = apulse.raw_amplitude() - apulse.baseline();
             if (pulse_height >= pulse_threshold) num_pulses +=1;
@@ -182,14 +182,14 @@ void PrintADCData::PrintInfoInData(std::map<unsigned long, std::vector<Waveform<
     //Length of waveform vector should be 1 in normal mode, but greater than
     //1 in a hefty-like format (multiple waveform buffers)
     if(verbosity>3)std::cout << "Waveform size: " << raw_waveforms.size() << std::endl;
-    for (int j=0; j < raw_waveforms.size(); j++){
+    for (int j=0; j < (int) raw_waveforms.size(); j++){
       if(verbosity>4)std::cout << "Printing waveform info for buffer at index " << j << std::endl;
       Waveform<unsigned short> awaveform = raw_waveforms.at(j);
       if(verbosity>4)std::cout << "Waveform start time: " << std::setprecision(16) << awaveform.GetStartTime() << std::endl;
       std::vector<unsigned short>* thewave=awaveform.GetSamples();
       if(verbosity>5){
         std::cout << "BEGIN SAMPLES" << std::endl;
-        for (int i=0; i < thewave->size(); i++){
+        for (int i=0; i < (int) thewave->size(); i++){
           std::cout << thewave->at(i) << std::endl;
         }
       }

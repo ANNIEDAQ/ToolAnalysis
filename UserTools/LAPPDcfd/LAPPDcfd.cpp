@@ -84,14 +84,14 @@ bool LAPPDcfd::Execute(){
     std::vector<LAPPDPulse> thepulses;
 
     //loop over all Waveforms
-    for(int i=0; i<Vwavs.size(); i++){
+    for(int i=0; i<(int)Vwavs.size(); i++){
 
         Waveform<double> bwav = Vwavs.at(i);
 
         //std::cout<<"reconstructed pulses: "<<std::endl;;
 
         // loop over all candidate pulses on each waveform, as determined by the LAPPDFindPeak Tool
-        for(int j=0; j<Vpulses.size(); j++){
+        for(int j=0; j<(int)Vpulses.size(); j++){
 
           // for each pulse on the Waveform find the time using CFD1 algorithm
           double cfdtime = CFD_Discriminator1(bwav.GetSamples(),Vpulses.at(j));

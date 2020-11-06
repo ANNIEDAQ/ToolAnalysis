@@ -311,10 +311,11 @@ std::vector<std::string> LoadRawData::OrganizeRunParts(std::string FileList)
       //for(int i = 0;i<splitline.size(); i ++){
         //std::string filename = splitline.at(i);
         std::string filename = line;
-	    int rawfilerun, rawfilesubrun, rawfilepart;
+	int rawfilerun=-1;
+        int rawfilesubrun, rawfilepart;
         int numargs = 0;
-	    try{
-	    	std::reverse(line.begin(),line.end());
+	try{
+	    std::reverse(line.begin(),line.end());
             //Part number is the first character now.
             size_t pplace = line.find("p");
             std::string part = line.substr(0,pplace);
@@ -352,11 +353,11 @@ std::vector<std::string> LoadRawData::OrganizeRunParts(std::string FileList)
     if(verbosity>v_debug) std::cout << "MRDDataDecoder Tool: Organizing filenames: " << std::endl;
     //Now, organize files based on the part number array
     std::vector < std::pair<int,std::string>> SortingVector;
-    for (int i = 0; i < UnorganizedFileList.size(); i++){
+    for (int i = 0; i < (int) UnorganizedFileList.size(); i++){
       SortingVector.push_back( std::make_pair(RunCodes.at(i),UnorganizedFileList.at(i)));
     }
     std::sort(SortingVector.begin(),SortingVector.end());
-    for (int j = 0; j<SortingVector.size();j ++) {
+    for (int j = 0; j < (int) SortingVector.size();j ++) {
       OrganizedFiles.push_back(SortingVector.at(j).second);
     }
   } else {

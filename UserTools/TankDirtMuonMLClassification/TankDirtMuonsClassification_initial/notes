@@ -1,0 +1,16 @@
+* quickanalysis_ANNIEratpac.C: reads the ratpac simulation output file and creates a .csv file with these variables:
+particlePDGCode, trueKineticEnergy, vertexX,vertexY,vertexZ,numberofPEs, and pmt x position pmt y position, pmt z position,pmt timing  for all hits.
+
+In this Ratpac version: 
+-> For the particle's position:  z direction is the beam axis and y is the detector height. 
+          		     The center (0,0,0) is at the veto.
+
+-> For the PMT positions: z is the vertical axis (height) and y is the beam axis BUT the direction of y is reverse to the beam.
+
+* read_csv.py: reads the csv file and generates some example plots.
+
+* Classifier.py: reads the .csv and classifies dirt from tank muons.  
+
+* plot_confusion_matrix.py: reads the predictionsKeras.csv and plots the confusion matrix 
+
+Note: these results have been using a quick ratpac simualtion. They need to be confirmed with the full ANNIE simulation and FMV.  

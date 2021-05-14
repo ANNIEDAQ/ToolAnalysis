@@ -202,33 +202,45 @@ void calculate_fmv_efficiency(std::string inputfile, std::string outputfile, boo
     double avg_efficiency_loose=0;
     double error_avg_efficiency_loose=0;
 
+    int non_zero_bins_strict=0;
+    int non_zero_bins_loose=0;
     for (int bin=0; bin<hist_obs_strict_rebin->GetXaxis()->GetNbins(); bin++){
       double obs_counts = hist_obs_strict_rebin->GetBinContent(bin+1);
       double exp_counts = hist_exp_strict_rebin->GetBinContent(bin+1);
       if (exp_counts == 0) exp_counts = 1;
+      else non_zero_bins_strict++;
       hist_eff_strict_temp->SetBinContent(bin+1,obs_counts/exp_counts);
       double eff_error = sqrt(obs_counts/exp_counts/exp_counts+obs_counts*obs_counts/exp_counts/exp_counts/exp_counts);
       hist_eff_strict_temp->SetBinError(bin+1,eff_error);
       double obs_counts_loose = hist_obs_loose_rebin->GetBinContent(bin+1);
       double exp_counts_loose = hist_exp_loose_rebin->GetBinContent(bin+1);
       if (exp_counts_loose == 0) exp_counts_loose = 1;
+      else non_zero_bins_loose++;
       hist_eff_loose_temp->SetBinContent(bin+1,obs_counts_loose/exp_counts_loose);
       double eff_loose_error = sqrt(obs_counts_loose/exp_counts_loose/exp_counts_loose+obs_counts_loose*obs_counts_loose/exp_counts_loose/exp_counts_loose/exp_counts_loose);
       hist_eff_loose_temp->SetBinError(bin+1,eff_loose_error);
-      avg_efficiency_strict+=(obs_counts/exp_counts);
-      error_avg_efficiency_strict+=(eff_error*eff_error);
-      avg_efficiency_loose+=(obs_counts_loose/exp_counts_loose);
-      error_avg_efficiency_loose+=(eff_loose_error*eff_loose_error);
+      if (exp_counts >0){
+        avg_efficiency_strict+=(obs_counts/exp_counts);
+        error_avg_efficiency_strict+=(eff_error*eff_error);
+      }
+      if (exp_counts_loose > 0){
+        avg_efficiency_loose+=(obs_counts_loose/exp_counts_loose);
+        error_avg_efficiency_loose+=(eff_loose_error*eff_loose_error);
+      }
     }
     eff_hists_strict.push_back(hist_eff_strict_temp);
     eff_hists_loose.push_back(hist_eff_loose_temp);
 
-    avg_efficiency_strict/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
-    avg_efficiency_loose/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    //avg_efficiency_strict/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    //avg_efficiency_loose/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    avg_efficiency_strict/=non_zero_bins_strict;
+    avg_efficiency_loose/=non_zero_bins_loose;
     error_avg_efficiency_strict=sqrt(error_avg_efficiency_strict);
-    error_avg_efficiency_strict/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    //error_avg_efficiency_strict/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    error_avg_efficiency_strict/=non_zero_bins_strict;
     error_avg_efficiency_loose=sqrt(error_avg_efficiency_loose);
-    error_avg_efficiency_loose/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    //error_avg_efficiency_loose/=hist_obs_strict_rebin->GetXaxis()->GetNbins();
+    error_avg_efficiency_loose/=non_zero_bins_loose;
     if (i < 13) {
       fmv_eff_strict_avg_layer1->SetBinContent(i+1,avg_efficiency_strict);
       fmv_eff_strict_avg_layer1->SetBinError(i+1,error_avg_efficiency_strict);

@@ -29,7 +29,11 @@ bool TimeClustering::Initialise(std::string configfile, DataModel &data){
 	
 	LaunchTApplication = false;
 	MakeSingleEventPlots = false;      //very verbose, mostly for debugging
-	
+	ModifiedTDCData = false;	
+	//Set default values for time-shifted TDC channels
+	TimeShiftChannels = "";
+	shifted_channels = {std::make_pair(0,51),std::make_pair(82,107),std::make_pair(142,167),std::make_pair(194,219),std::make_pair(250,275),std::make_pair(306,332)};
+
 	m_variables.Get("verbosity",verbosity);
 	m_variables.Get("IsData",isData);
 	m_variables.Get("MinDigitsForTrack",minimumdigits);
@@ -40,7 +44,9 @@ bool TimeClustering::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("LaunchTApplication",LaunchTApplication);
 	m_variables.Get("OutputROOTFile",output_rootfile);
 	m_variables.Get("MapChankey_WCSimID",file_chankeymap);
-	
+	m_variables.Get("ModifiedTDCData",ModifiedTDCData);
+        m_variables.Get("TimeShiftChannels",TimeShiftChannels);
+
 	if (!MakeMrdDigitTimePlot) LaunchTApplication = false;  //no use launching TApplication when histograms are not produced
 	
 	if(LaunchTApplication){
@@ -90,6 +96,11 @@ bool TimeClustering::Initialise(std::string configfile, DataModel &data){
 		mrddigitts = new TH1D("mrddigitts","MRD Times",1000,0,4000);
 		mrddigitts_vertical = new TH1D("mrddigitts_vertical","MRD Times (Vertical Layers)",1000,0,4000);
 		mrddigitts_horizontal = new TH1D("mrddigitts_horizontal","MRD Times (Horizontal Layers)",1000,0,4000); 
+		hist_chankey = new TH1D("hist_chankey","Chankey frequency",340,0,340);
+		hist_chankey_cluster = new TH1D("hist_chankey_cluster","Chankey frequency (Cluster)",340,0,340);
+		hist_chankey_time = new TH2D("hist_chankey_time","Chankey vs. time",340,0,340,1000,0,4000);
+		hist_chankey_time_cluster = new TH2D("hist_chankey_time_cluster","Chankey vs. time (cluster)",340,0,340,1000,0,4000);
+		hist_chankey_multi = new TH1D("hist_chankey_multi","Chankey multi-hit frequency",340,0,340);
 
 		if (MakeSingleEventPlots){
 			mrddigitts_single = new TH1D("mrddigitts_single","MRD Single Times",1000,0,4000);
@@ -103,7 +114,6 @@ bool TimeClustering::Initialise(std::string configfile, DataModel &data){
 		ifstream file_mapping(file_chankeymap);
 		unsigned long temp_chankey;
 		int temp_wcsimid;
-		std::map<int,unsigned long> mrdpmtid_to_channelkey; // for FindMrdTracks tool
 		while (!file_mapping.eof()){
 			file_mapping>>temp_chankey>>temp_wcsimid;
 			if (file_mapping.eof()) break;
@@ -124,6 +134,28 @@ bool TimeClustering::Initialise(std::string configfile, DataModel &data){
 		get_ok = m_data->CStore.Get("channelkey_to_faccpmtid",channelkey_to_faccpmtid);
 		if(not get_ok){
 			Log("TimeClustering Tool: Error! No channelkey_to_faccpmtid in CStore!",v_error,verbosity);
+			return false;
+		}
+	}
+
+	//Read in time shifted channels from configuration file
+	if (TimeShiftChannels != ""){
+		shifted_channels.clear();		
+		ifstream file_timeshift(TimeShiftChannels);
+		if (file_timeshift.good()){
+			unsigned long lower_chkey, upper_chkey;
+			while (!file_timeshift.eof()){
+				file_timeshift >> lower_chkey >> upper_chkey;
+				if (file_timeshift.eof()) break;
+				std::cout <<"lower_chkey: "<<lower_chkey<<", upper_chkey: "<<upper_chkey<<std::endl;
+				if (lower_chkey > upper_chkey){
+					Log("TimeClustering tool: Error when reading in TiemShiftChannels file! Upper chankey "+std::to_string(upper_chkey)+" is lower than lower chankey! "+std::to_string(lower_chkey)+" Abort",v_error,verbosity);
+					return false;
+				}
+				shifted_channels.push_back(std::make_pair(lower_chkey,upper_chkey));
+			}
+		} else {
+			Log("TimeClustering Tool: Error! Timeshift file "+TimeShiftChannels+" does not exist!",v_error,verbosity);
 			return false;
 		}
 	}
@@ -156,6 +188,8 @@ bool TimeClustering::Execute(){
 	mrddigittimesthisevent.clear();
 	mrddigitchargesthisevent.clear();
 	
+        std::vector<unsigned long> multi_vector;
+
 	if (MakeMrdDigitTimePlot && MakeSingleEventPlots){
 		mrddigitts_single->Reset();
 		mrddigitts_cluster_single->Reset();
@@ -176,7 +210,8 @@ bool TimeClustering::Execute(){
 		}
 	} else {
 		std::cout <<"TimeClustering tool: MC file: Getting TDCData object"<<std::endl;
-		get_ok = m_data->Stores.at("ANNIEEvent")->Get("TDCData",TDCData_MC);  // a std::map<unsigned long,vector<MCHit>>
+		if (ModifiedTDCData) get_ok = m_data->Stores.at("ANNIEEvent")->Get("TDCData_mod",TDCData_MC);  // a std::map<unsigned long,vector<MCHit>>, with artificially applied efficiencies
+		else get_ok = m_data->Stores.at("ANNIEEvent")->Get("TDCData",TDCData_MC);  // a std::map<unsigned long,vector<MCHit>>, without artifically applied efficiencies
 		if(not get_ok){
 			Log("TimeClustering Tool: No TDC data in ANNIEEvent!",v_error,verbosity);
 			return true;
@@ -213,7 +248,14 @@ bool TimeClustering::Execute(){
 				if (channelkey_to_mrdpmtid.find(chankey) != channelkey_to_mrdpmtid.end()){
 					mrddigitpmtsthisevent.push_back(channelkey_to_mrdpmtid[chankey]);
 					mrddigitchankeysthisevent.push_back(chankey);
-					mrddigittimesthisevent.push_back(hitsonthismrdpmt.GetTime());
+					double time = hitsonthismrdpmt.GetTime();
+					//Times of channelkeys in TDC crate 7 (vertical channels) are systematically late by ~20ns with respect to channels in crate 8 --> shift the itmes for those channelkeys manually by 20ns
+					//Affected channelkeys are stored in shifted_channels and can be configured in the config file
+					for (int i_shift=0; i_shift < (int) shifted_channels.size(); i_shift++){
+						std::pair<unsigned long,unsigned long> temp_pair = shifted_channels.at(i_shift);
+						if (chankey >= temp_pair.first && chankey <= temp_pair.second) time -= 20.;
+					}
+					mrddigittimesthisevent.push_back(time);
 					mrddigitchargesthisevent.push_back(hitsonthismrdpmt.GetCharge());
 					if(MakeMrdDigitTimePlot){  // XXX XXX XXX rename
 						// fill the histogram if we're checking
@@ -225,6 +267,9 @@ bool TimeClustering::Execute(){
 						else if (MRDTriggertype == "No Loopback") mrddigitts_noloopback->Fill(hitsonthismrdpmt.GetTime());    //this triggertype should not occur if everything is running smoothly, but it can serve as a good cross-check in any case
 						Detector* thistube = geom->ChannelToDetector(chankey);
 						unsigned long detkey = thistube->GetDetectorID();
+						hist_chankey->Fill(detkey);
+						hist_chankey_time->Fill(detkey,hitsonthismrdpmt.GetTime());
+						if (std::count(mrddigitchankeysthisevent.begin(),mrddigitchankeysthisevent.end(),chankey)>1) hist_chankey_multi->Fill(chankey);
 						Paddle *mrdpaddle = (Paddle*) geom->GetDetectorPaddle(detkey);
 						int orientation = mrdpaddle->GetOrientation(); // 0 is horizontal, 1 is vertical
 						if (orientation == 0) mrddigitts_horizontal->Fill(hitsonthismrdpmt.GetTime());
@@ -288,6 +333,7 @@ bool TimeClustering::Execute(){
 					mrddigitchankeysthisevent.push_back(chankey);
 					mrddigittimesthisevent.push_back(hitsonthismrdpmt.GetTime());
 					mrddigitchargesthisevent.push_back(hitsonthismrdpmt.GetCharge());
+					mrddigitchankeysthisevent.push_back(chankey);
 					if(MakeMrdDigitTimePlot){  // XXX XXX XXX rename
 						// fill the histogram if we're checking
 						if (MakeSingleEventPlots) mrddigitts_single->Fill(hitsonthismrdpmt.GetTime());
@@ -344,6 +390,8 @@ bool TimeClustering::Execute(){
 		if (MakeMrdDigitTimePlot){
 			for (unsigned int i_time=0; i_time<mrddigittimesthisevent.size(); i_time++){
 				mrddigitts_file->cd();
+				hist_chankey_cluster->Fill(mrddigitchankeysthisevent.at(i_time));
+				hist_chankey_time_cluster->Fill(mrddigitchankeysthisevent.at(i_time),mrddigittimesthisevent.at(i_time));
 				if (MakeSingleEventPlots) mrddigitts_cluster_single->Fill(mrddigittimesthisevent.at(i_time));
 				mrddigitts_cluster->Fill(mrddigittimesthisevent.at(i_time));
 				if (MRDTriggertype == "Cosmic") mrddigitts_cosmic_cluster->Fill(mrddigittimesthisevent.at(i_time));
@@ -450,6 +498,8 @@ bool TimeClustering::Execute(){
 					for (unsigned int i_time = 0; i_time < digittimesinasubevent.size(); i_time++){
 						mrddigitts_file->cd();
 						mrddigitts_cluster->Fill(digittimesinasubevent.at(i_time));
+						hist_chankey_cluster->Fill(mrdpmtid_to_channelkey[tubeidsinasubevent.at(i_time)]);
+						hist_chankey_time_cluster->Fill(mrdpmtid_to_channelkey[tubeidsinasubevent.at(i_time)],digittimesinasubevent.at(i_time));
 						if (MakeSingleEventPlots) mrddigitts_cluster_single->Fill(digittimesinasubevent.at(i_time));
 						if (MRDTriggertype == "Cosmic") mrddigitts_cosmic_cluster->Fill(digittimesinasubevent.at(i_time));
 						else if (MRDTriggertype == "Beam") mrddigitts_beam_cluster->Fill(digittimesinasubevent.at(i_time));
@@ -520,18 +570,23 @@ bool TimeClustering::Finalise(){
 	
 	if (MakeMrdDigitTimePlot){
 		mrddigitts_file->cd();
-			mrddigitts_cosmic_cluster->Write();
-			mrddigitts_beam_cluster->Write();
-			mrddigitts_noloopback_cluster->Write();
-			mrddigitts_cluster->Write();
-			mrddigitts_cosmic->Write();
-			mrddigitts_beam->Write();
-			mrddigitts_noloopback->Write();
-			mrddigitts->Write();
+		mrddigitts_cosmic_cluster->Write();
+		mrddigitts_beam_cluster->Write();
+		mrddigitts_noloopback_cluster->Write();
+		mrddigitts_cluster->Write();
+		mrddigitts_cosmic->Write();
+		mrddigitts_beam->Write();
+		mrddigitts_noloopback->Write();
+		mrddigitts->Write();
 		mrddigitts_horizontal->Write();
 		mrddigitts_vertical->Write();
-			mrddigitts_file->Close();
-			delete mrddigitts_file;     //histograms get deleted by deleting associated TFile
+		hist_chankey->Write();
+		hist_chankey_cluster->Write();
+		hist_chankey_time->Write();
+		hist_chankey_time_cluster->Write();
+		hist_chankey_multi->Write();
+		mrddigitts_file->Close();
+		delete mrddigitts_file;     //histograms get deleted by deleting associated TFile
 		mrddigitts_file=0;
 		gROOT->cd();
 	}

@@ -1,0 +1,12 @@
+# FindMrdTracks Config File
+# all variables retrieved with m_variables.Get() must be defined here!
+
+verbosity 5
+IsData 0
+OutputDirectory .
+OutputFile MRDTracks_Beam_MRDEff_999
+DrawTruthTracks 1 # whether to add MC Truth track info for drawing in MrdPaddlePlot Tool
+                  ## note you need to run that tool to actually view the tracks!
+WriteTracksToFile 1	# should the track information be written to a ROOT-file?
+SelectTriggerType 0	#should the loaded data be filtered by trigger type?
+TriggerType Cosmic	#options: Cosmic, Beam, No Loopback

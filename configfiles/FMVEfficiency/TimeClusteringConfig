@@ -10,4 +10,4 @@ IsData 1
 #OutputROOTFile TimeClustering_MRDTest28_cluster30ns
 OutputROOTFile test
 MapChankey_WCSimID ./configfiles/FindMrdTracks/MRD_Chankey_WCSimID.dat
-
+TimeShiftChannels ./configfiles/FMVEfficiency/TimeShiftChannels.txt

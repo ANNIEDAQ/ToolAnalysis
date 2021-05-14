@@ -43,7 +43,12 @@ class TimeClustering: public Tool {
 	std::string output_rootfile;
 	std::string file_chankeymap;
 	int evnum;
-	
+	bool ModifiedTDCData;	
+	std::string TimeShiftChannels;
+
+	//Information about which channels are time-shifted
+	std::vector<std::pair<unsigned long,unsigned long>> shifted_channels;
+
 	//ANNIEEvent data
 	std::map<unsigned long,vector<Hit>>* TDCData;
 	std::map<unsigned long,vector<MCHit>>* TDCData_MC;
@@ -52,7 +57,8 @@ class TimeClustering: public Tool {
 	// From the CStore, for converting WCSim TubeId t channelkey
 	std::map<unsigned long,int> channelkey_to_mrdpmtid;
 	std::map<unsigned long,int> channelkey_to_faccpmtid;
-	
+	std::map<int,unsigned long> mrdpmtid_to_channelkey;	
+
 	// Cluster properties
 	std::vector<double> mrddigittimesthisevent;
 	std::vector<int> mrddigitpmtsthisevent;
@@ -75,6 +81,11 @@ class TimeClustering: public Tool {
 	TH1D *mrddigitts_single = nullptr;
 	TH1D *mrddigitts_horizontal = nullptr;
 	TH1D *mrddigitts_vertical = nullptr;
+	TH1D *hist_chankey = nullptr;
+	TH1D *hist_chankey_cluster = nullptr;
+	TH2D *hist_chankey_time = nullptr;	
+	TH2D *hist_chankey_time_cluster = nullptr;	
+	TH1D *hist_chankey_multi = nullptr;
 	TFile* mrddigitts_file = nullptr;
 
 	//TApplication-related variables

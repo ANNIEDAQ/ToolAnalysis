@@ -1,0 +1,6 @@
+#MrdEfficiency config file
+
+verbosity 1
+plotDirectory .
+drawHistos 0		#TApplication
+outputfile MrdEfficiency_beam_MRDEff_999.root

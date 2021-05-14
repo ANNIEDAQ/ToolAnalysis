@@ -1,6 +1,7 @@
 verbosity 0
 LAPPDChannelCount 60
-FACCMRDGeoFile ./configfiles/LoadGeometry/FullMRDGeometry.csv
+FACCMRDGeoFile ./configfiles/LoadGeometry/FullMRDGeometry_09_29_20.csv 
+#FACCMRDGeoFile ./configfiles/LoadGeometry/FullMRDGeometry.csv
 DetectorGeoFile ./configfiles/LoadGeometry/DetectorGeometrySpecs.csv
 LAPPDGeoFile ./configfiles/LoadGeometry/LAPPDGeometry.csv
 TankPMTGeoFile ./configfiles/LoadGeometry/FullTankPMTGeometry.csv

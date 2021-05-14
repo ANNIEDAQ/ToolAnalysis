@@ -74,8 +74,12 @@ bool MRDDataDecoder::Execute(){
     int channel = mrddata->Channel.at(i_data);
     int hittimevalue = mrddata->Value.at(i_data);
     std::vector<int> CrateSlotChannel{crate,slot,channel};
-    unsigned long chankey = MRDCrateSpaceToChannelNumMap[CrateSlotChannel];
-    if (CrateSlotChannel != CrateSlotChannel_Beam && CrateSlotChannel != CrateSlotChannel_Cosmic){
+    unsigned long chankey = 999;
+    if (MRDCrateSpaceToChannelNumMap.find(CrateSlotChannel) != MRDCrateSpaceToChannelNumMap.end()){
+      chankey = MRDCrateSpaceToChannelNumMap[CrateSlotChannel];
+    }
+    //std::cout <<"crate: "<<crate<<", slot: "<<slot<<", channel: "<<channel<<", chankey: "<<chankey<<std::endl;
+    if (CrateSlotChannel != CrateSlotChannel_Beam && CrateSlotChannel != CrateSlotChannel_Cosmic && chankey != 999){
       std::pair <unsigned long,int> keytimepair(chankey,hittimevalue);  //chankey will be 0 when looking at loopback channels that don't have an entry in the mapping-->skip
       MRDEvents[timestamp].push_back(keytimepair);
     }

@@ -1,0 +1,7 @@
+#MrdDistributions Config file	
+
+verbosity 5
+printTracks 1
+drawHistos 0
+plotDirectory .
+RootFileOutput MrdDistributions_beam_MRDEff_999.root

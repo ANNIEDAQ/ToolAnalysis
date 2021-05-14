@@ -1,0 +1,10 @@
+#LoadWCSimLAPPD Config File
+# all variables retrieved with m_variables.Get() must be defined here!
+verbose 1
+
+InputFile /pnfs/annie/persistent/users/mnieslon/wcsim/output/tankonly/wcsim_06-29-20_MRD/wcsim_mrd_lappd_0.9.root
+#InputFile /pnfs/annie/persistent/users/mnieslon/wcsim/output/tankonly/wcsim_beamlike_2020-04-24/wcsim_beamlike_muon_lappd_0.9.root
+
+WCSimVersion 3               ## should reflect the WCSim version of the files being loaded
+InnerStructureRadius 1.3545  ## octagonal inner structure radius in m (from drawings 106.64")
+DrawDebugGraphs 0            ## whether to draw TPolyMarker3D's of hits

@@ -1,0 +1,25 @@
+# MrdPaddlePlot Config File
+# all variables retrieved with m_variables.Get() must be defined here!
+
+verbosity 1
+gdmlpath ../WCSim/annie_v04.gdml
+## because we're only interested in drawing tracks over the gdml subvolume representing the hall, 
+## (not the world entirely), but we want the coordinates to match those from WCSim
+## (which match the world), we need to offset our WCSim positions by the position of the hall within the world
+#gdmlpath /annie/app/users/moflaher/wcsim/root_work/annie_v04_aligned.gdml ## has buildingoffsets included
+## units cm
+buildingoffsetx 206.82
+buildingoffsety 54.3225
+buildingoffsetz 243.43894
+
+# save images of hit paddles in each track identified. ONLY FOR SMALL NUM TRACKS AS DEBUG!
+drawPaddlePlot 1        # draw the top/side view paddle plot of tracks
+drawGdmlOverlay 0       # draw a 3D representation of the ANNIE detector overlaid with MRD tracks
+drawStatistics 1        # histograms plotting some debug statistics about the track reconstruction
+saveimages 0            # save the paddle plots as images.
+saverootfile 1		# save the paddle plots within a rootfile.
+plotDirectory ./  # where to save plot images
+printTClonesTracks 0    # verbose printout of track information from TClonesArray
+useTApplication 0	# launch a TApplication to directly show the plots (slow on cluster)
+OutputROOTFile MRDPaddlePlots_beam_MRDEff_999
+DrawOnlyTracks 0	# should subevents only be drawn if there was a track found?

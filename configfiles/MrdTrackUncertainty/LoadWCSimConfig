@@ -1,0 +1,12 @@
+#LoadWCSim Config File
+# all variables retrieved with m_variables.Get() must be defined here!
+verbose 1
+
+InputFile /pnfs/annie/persistent/users/moflaher/wcsim/multipmt/tankonly/wcsim_25_04_19_ANNIEp2v6_nodigit_BNB_Water_10k_22-05-17/wcsim_0.1043.3.root
+
+WCSimVersion 3               ## should reflect the WCSim version of the files being loaded
+HistoricTriggeroffset 0      ## time offset of digits relative to the trigger
+UseDigitSmearedTime 1        ## whether to use smeared digit time (T), or true time of first photon (F)
+LappdNumStrips 56            ## num channels to construct from each LAPPD
+LappdStripLength 100         ## relative x position of each LAPPD strip, for dual-sided readout [mm]
+LappdStripSeparation 10      ## stripline separation, for calculating relative y position of each LAPPD strip [mm]

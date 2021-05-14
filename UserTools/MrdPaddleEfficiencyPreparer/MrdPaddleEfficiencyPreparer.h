@@ -52,6 +52,7 @@ class MrdPaddleEfficiencyPreparer: public Tool {
 	bool isData;
 
 	std::map<unsigned long,int> channelkey_to_mrdpmtid;
+	std::map<int,unsigned long> mrdpmtid_to_channelkey;
 
  	int numsubevs;
  	int numtracksinev;
@@ -66,14 +67,30 @@ class MrdPaddleEfficiencyPreparer: public Tool {
  	std::vector<int> LayersHit;
  	int numlayershit;
 	double tracklength;
+	int NPMTsHit = 0;
+	int NLayersHit = 0;
+	double StartVertexX = 0.;
+	double StartVertexY = 0.;
+	double StartVertexZ = 0.;
+	double StopVertexX = 0.;
+	double StopVertexY = 0.;
+	double StopVertexZ = 0.;
 
  	TFile *hist_file = nullptr;
+	TH1F *hist_chankey = nullptr;
+	TTree *tree_trackfit = nullptr;
 
  	std::map<int,std::map<unsigned long,TH1D*>> observed_MRDHits;
  	std::map<int,std::map<unsigned long,TH1D*>> expected_MRDHits;
  	std::map<int,double> zLayers;
  	std::map<int,int> orientationLayers;
 	std::map<int,std::vector<unsigned long>> channelsLayers;
+	std::map<unsigned long, int> map_chkey_half;
+
+        double extents[11] = {1.318,1.146,1.318,1.299,1.318,1.318,1.318,1.521,1.318,1.521,1.318};
+ 	int channels_start[11] = {26,52,82,108,142,168,194,220,250,276,306};
+	std::map<int,std::map<unsigned long,TH1D*>> observed_MRDHits_layer;
+ 	std::map<int,std::map<unsigned long,TH1D*>> expected_MRDHits_layer;
 
  	int v_error = 0;
  	int v_warning = 1;

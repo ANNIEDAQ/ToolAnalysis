@@ -1,0 +1,8 @@
+#ApplyMRDEff Config file
+
+verbosity 1
+OutputFile mrd_apply_eff_beam_999
+DebugPlots 1
+MapChankey_WCSimID ./configfiles/MrdPaddleEfficiency/MRD_Chankey_WCSimID.dat
+UseFileEff 1
+FileEff /pnfs/annie/persistent/users/mnieslon/mrdtrackreco/mrd_apply_eff/mrd_apply_eff_beam_999.root

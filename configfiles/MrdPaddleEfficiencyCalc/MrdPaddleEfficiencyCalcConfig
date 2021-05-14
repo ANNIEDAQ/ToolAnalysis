@@ -2,9 +2,10 @@
 
 #InputFile /annie/app/users/mnieslon/MyToolAnalysis8/mrd_paddleeff/R1619_R1624_mrdobserved.root
 #OutputFile R1619_R1624_mrdefficiency.root
-InputFile /annie/app/users/mnieslon/MyToolAnalysis6/MC_Truth_0_999_mrdobserved.root
-OutputFile MC_Truth_0_999_mrdefficiency.root
+InputFile /annie/app/users/mnieslon/MyToolAnalysis_Efficiency/mrd_observed/mrd_observed_R2135_R2146.root
+OutputFile mrd_eff_R2135_R2146_MrdGeometry_09-29-20_LayerPlots.root
 InactiveFile ./configfiles/MrdPaddleEfficiencyCalc/MRD_inactivech_eff.txt
-IsData 0   #Is this a data or MC file?
+IsData 1   #Is this a data or MC file?
 MCChankeyFile ./configfiles/MrdPaddleEfficiencyCalc/MRD_Chankeys_Data_MC.dat #Needed in MC case
-verbosity 2
+verbosity 5
+LayerPlots 1	#Should layer-wise plots be produced?

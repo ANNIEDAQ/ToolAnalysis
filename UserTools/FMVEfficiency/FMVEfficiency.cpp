@@ -11,14 +11,18 @@ bool FMVEfficiency::Initialise(std::string configfile, DataModel &data){
   outputfile = "fmv_efficiency";
   m_data= &data;
 
+  padPerLayer = 1;
+
   //Get user configuration  
   m_variables.Get("SinglePEGains",singlePEgains);
   m_variables.Get("verbosity",verbosity);
   m_variables.Get("OutputFile",outputfile);
   m_variables.Get("UseTank",useTank);
   m_variables.Get("IsData",isData);
+  m_variables.Get("PadPerLayer",padPerLayer);
 
   if (useTank != 0 && useTank != 1) useTank = 0;
+  if (padPerLayer < 1) padPerLayer = 1;
 
   //Geometry
   m_data->Stores["ANNIEEvent"]->Header->Get("AnnieGeometry",geom);
@@ -46,7 +50,12 @@ bool FMVEfficiency::Initialise(std::string configfile, DataModel &data){
   time_diff_Layer2 = new TH1F("time_diff_Layer2","Time differences FMV-MRD (Layer 2)",2000,-4000,4000);
   num_paddles_Layer1= new TH1F("num_paddles_Layer1","Number of hit FMV paddles (Layer 1)",14,0,14); 
   num_paddles_Layer2= new TH1F("num_paddles_Layer2","Number of hit FMV paddles (Layer 2)",14,0,14); 
- 
+  time_diff_paddle = new TH2F("time_diff_paddle","Time difference paddles",26,0,26,200,-2000,2000); 
+  time_diff_paddle_coinc = new TH2F("time_diff_paddle_coinc","Time difference paddles (coincidence)",26,0,26,400,-4000,4000); 
+  time_diff_paddle_simplecoinc = new TH2F("time_diff_paddle_simplecoinc","Time difference paddles (simple coincidence)",26,0,26,400,-4000,4000); 
+
+  fmv_layer1 = new TH1F("fmv_layer1","FMV Layer 1",13,0,13);
+  fmv_layer2 = new TH1F("fmv_layer2","FMV Layer 2",13,13,26);
   fmv_layer1_layer2 = new TH2F("fmv_layer1_layer2","FMV Layer 1 vs. Layer 2",13,0,13,13,13,26);
  
   fmv_observed_layer1 = new TH1F("fmv_observed_layer1","FMV observed hits (Layer 1)",13,0,13);
@@ -314,6 +323,10 @@ bool FMVEfficiency::Execute(){
               vector_fmv_times_first.push_back(fmv_time);
             }
             else { 
+	      /*if (detkey == 14 || detkey == 18 || detkey == 19) continue;
+              if (detkey == 23) detkey = 14;
+	      else if (detkey == 24) detkey = 18;
+	      else if (detkey == 25) detkey = 19;*/
               hit_fmv_detkeys_second.push_back(detkey);
               double fmv_time = 0;
               int nhits_fmv = 0;
@@ -486,10 +499,13 @@ bool FMVEfficiency::Execute(){
   Log("FMVEfficiency tool: Intersection properties Layer 2: x_layer2 = "+std::to_string(x_layer2)+", y_layer2 = "+std::to_string(y_layer2),v_debug,verbosity);
   
 
-  if (npaddles_Layer1 == 1){
+  //if (npaddles_Layer1 == 1){
+  if (npaddles_Layer1 >= 1 && npaddles_Layer1 <= padPerLayer){
     for (unsigned int i_fmv = 0; i_fmv < hit_fmv_detkeys_first.size(); i_fmv++){
 
+      time_diff_paddle->Fill(hit_fmv_detkeys_first.at(i_fmv),vector_fmv_times_first.at(i_fmv)-mrd_time);
       //Check whether MRD & FMV Layer 1 fired in coincidence (time cut)
+      fmv_layer1->Fill(hit_fmv_detkeys_first.at(i_fmv));
       time_diff_Layer1->Fill(vector_fmv_times_first.at(i_fmv)-mrd_time);
       if (fabs(vector_fmv_times_first.at(i_fmv)-mrd_time)>100.) continue;
       
@@ -522,8 +538,14 @@ bool FMVEfficiency::Execute(){
         if (y_layer1-fmv_firstlayer_y.at(detkey_first) > -0.4 && y_layer1-fmv_firstlayer_y.at(detkey_first)<0.6 && fabs(x_layer1-fmv_x)<1.6){
           fmv_secondlayer_observed_track_loose.at(detkey_first)++;
           vector_observed_loose_layer2.at(detkey_first)->Fill(x_layer1);
+	  std::vector<unsigned long>::iterator it = std::find(hit_fmv_detkeys_second.begin(),hit_fmv_detkeys_second.end(),detkey_first+n_veto_pmts/2);
+	  int index = std::distance(hit_fmv_detkeys_second.begin(),it);
+          time_diff_paddle_coinc->Fill(detkey_first+n_veto_pmts/2,vector_fmv_times_second.at(index)-vector_fmv_times_first.at(i_fmv));
         }
         fmv_secondlayer_observed.at(detkey_first)++;
+	std::vector<unsigned long>::iterator it = std::find(hit_fmv_detkeys_second.begin(),hit_fmv_detkeys_second.end(),detkey_first+n_veto_pmts/2);
+        int index = std::distance(hit_fmv_detkeys_second.begin(),it);
+        time_diff_paddle_simplecoinc->Fill(detkey_first+n_veto_pmts/2,vector_fmv_times_second.at(index)-vector_fmv_times_first.at(i_fmv));
         if (hit_chankey_layer1 == detkey_first){
           vector_observed_strict_layer2.at(detkey_first)->Fill(x_layer1);
           fmv_secondlayer_observed_track_strict.at(detkey_first)++;
@@ -532,12 +554,16 @@ bool FMVEfficiency::Execute(){
     }
   }
 
-  if (npaddles_Layer2 == 1){
+  //if (npaddles_Layer2 == 1){
+  if (npaddles_Layer2 >= 1 && npaddles_Layer2 <=padPerLayer){
     for (unsigned int i_fmv = 0; i_fmv < hit_fmv_detkeys_second.size(); i_fmv++){
+
+      time_diff_paddle->Fill(hit_fmv_detkeys_second.at(i_fmv),vector_fmv_times_second.at(i_fmv)-mrd_time-20);
 
       //Check whether MRD & FMV Layer 2 fired in coincidence (time cut)
       time_diff_Layer2->Fill(vector_fmv_times_second.at(i_fmv)-mrd_time);
-      if (fabs(vector_fmv_times_second.at(i_fmv)-mrd_time)>100.) continue;
+      fmv_layer2->Fill(hit_fmv_detkeys_second.at(i_fmv));
+      if (fabs(vector_fmv_times_second.at(i_fmv)-mrd_time-20.)>100.) continue;
       
       //Get properties of coincident MRD/FMV Layer 2 hit
       unsigned long detkey_second = hit_fmv_detkeys_second.at(i_fmv);
@@ -566,7 +592,13 @@ bool FMVEfficiency::Execute(){
         if (y_layer2-fmv_secondlayer_y.at(detkey_first) > -0.4 && y_layer2-fmv_secondlayer_y.at(detkey_first)<0.6 && fabs(x_layer2-fmv_x)<1.6){
           fmv_firstlayer_observed_track_loose.at(detkey_first)++;
           vector_observed_loose_layer1.at(detkey_first)->Fill(x_layer2);
+	  std::vector<unsigned long>::iterator it = std::find(hit_fmv_detkeys_first.begin(),hit_fmv_detkeys_first.end(),detkey_first);
+          int index = std::distance(hit_fmv_detkeys_first.begin(),it);
+          time_diff_paddle_coinc->Fill(detkey_first,vector_fmv_times_first.at(index)-vector_fmv_times_second.at(i_fmv));
         }
+	std::vector<unsigned long>::iterator it = std::find(hit_fmv_detkeys_first.begin(),hit_fmv_detkeys_first.end(),detkey_first);
+        int index = std::distance(hit_fmv_detkeys_first.begin(),it);
+        time_diff_paddle_simplecoinc->Fill(detkey_first,vector_fmv_times_first.at(index)-vector_fmv_times_second.at(i_fmv));
        for (int i_first=0; i_first < (int) hit_fmv_detkeys_first.size(); i_first++){
         fmv_layer1_layer2->Fill(hit_fmv_detkeys_first.at(i_first),detkey_second);
        }

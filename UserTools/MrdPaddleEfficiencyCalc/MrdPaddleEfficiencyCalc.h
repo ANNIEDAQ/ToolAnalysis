@@ -11,6 +11,7 @@
 #include "TCanvas.h"
 #include "TBox.h"
 #include "TROOT.h"
+#include "TColor.h"
 
 #include "Tool.h"
 
@@ -43,6 +44,7 @@ class MrdPaddleEfficiencyCalc: public Tool {
   std::string str_inactive;
   int verbosity;
   bool isData;
+  bool layer_plots;
   std::string mc_chankey_path;
   std::map<int,int> chankeymap_MC_data;
   std::map<int,int> chankeymap_data_MC;
@@ -55,6 +57,7 @@ class MrdPaddleEfficiencyCalc: public Tool {
   TH1D *eff_chankey = nullptr;
   TH2Poly *eff_top = nullptr;
   TH2Poly *eff_side = nullptr;
+  TH2Poly *eff_top_side = nullptr;
   TH2D *eff_crate1 = nullptr;
   TH2D *eff_crate2 = nullptr;
   TCanvas *canvas_elec = nullptr;
@@ -82,6 +85,16 @@ class MrdPaddleEfficiencyCalc: public Tool {
   double enlargeBoxes = 0.01;
   double shiftSecRow = 0.03;
   std::vector<TBox*> vector_box_inactive;
+
+  //Color palettes (kBird color palette)
+  const int n_colors=255;
+  double alpha=1.;    //make colors opaque, not transparent
+  Int_t Bird_palette[255];
+  Int_t Bird_Idx;
+  Double_t stops[9] = { 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000};
+  Double_t red[9]   = { 0.2082, 0.0592, 0.0780, 0.0232, 0.1802, 0.5301, 0.8186, 0.9956, 0.9764};
+  Double_t green[9] = { 0.1664, 0.3599, 0.5041, 0.6419, 0.7178, 0.7492, 0.7328, 0.7862, 0.9832};
+  Double_t blue[9]  = { 0.5293, 0.8684, 0.8385, 0.7914, 0.6425, 0.4662, 0.3499, 0.1968, 0.0539};
 
   //Verbosity levels
   int v_error = 0;

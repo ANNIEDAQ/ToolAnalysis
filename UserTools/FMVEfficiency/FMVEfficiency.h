@@ -42,6 +42,7 @@ class FMVEfficiency: public Tool {
   std::string outputfile;
   bool useTank;
   bool isData = true;
+  int padPerLayer;
 
   //data objects
   std::map<unsigned long,std::vector<Hit>>* TDCData=nullptr;
@@ -76,7 +77,12 @@ class FMVEfficiency: public Tool {
   TH1F *time_diff_Layer2 = nullptr;
   TH1F *num_paddles_Layer1 = nullptr;
   TH1F *num_paddles_Layer2 = nullptr;
+  TH2F *time_diff_paddle = nullptr;
+  TH2F *time_diff_paddle_coinc = nullptr;
+  TH2F *time_diff_paddle_simplecoinc = nullptr;
 
+  TH1F *fmv_layer1 = nullptr;
+  TH1F *fmv_layer2 = nullptr;
   TH2F *fmv_layer1_layer2 = nullptr;
 
   std::vector<TH1F*> vector_observed_strict_layer1, vector_expected_strict_layer1, vector_observed_loose_layer1, vector_expected_loose_layer1;

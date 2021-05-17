@@ -1,7 +1,7 @@
-verbosity 5
+verbosity 2
 
 BuildType MRD
-ProcessedFilesBasename ProcessedRawData_MRDOnly
+ProcessedFilesBasename ProcessedRawData
 SavePath ./
 
 ExecutesPerBuild 10

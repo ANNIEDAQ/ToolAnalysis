@@ -1,6 +1,9 @@
-LoadGeometry LoadGeometry ./configfiles/DataDecoder/LoadGeometryConfig
+LoadGeometry LoadGeometry ./configfiles/LoadGeometry/LoadGeometryConfig
 LoadRawData LoadRawData ./configfiles/DataDecoder/LoadRawDataConfig
 PMTDataDecoder PMTDataDecoder ./configfiles/DataDecoder/PMTDataDecoderConfig
 MRDDataDecoder MRDDataDecoder ./configfiles/DataDecoder/MRDDataDecoderConfig
 TriggerDataDecoder TriggerDataDecoder ./configfiles/DataDecoder/TriggerDataDecoderConfig
+BeamDecoder BeamDecoder ./configfiles/DataDecoder/BeamDecoderConfig
+PhaseIIADCCalibrator PhaseIIADCCalibrator ./configfiles/DataDecoder/PhaseIIADCCalibratorConfig
+PhaseIIADCHitFinder PhaseIIADCHitFinder ./configfiles/DataDecoder/PhaseIIADCHitFinderConfig
 ANNIEEventBuilder ANNIEEventBuilder ./configfiles/DataDecoder/ANNIEEventBuilderConfig

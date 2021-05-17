@@ -97,12 +97,18 @@ class PMTDataDecoder: public Tool {
   //Vector to keep track of fifo errors (type I, type II, for monitoring tools)
   std::vector<int> fifo1;
   std::vector<int> fifo2;
+  int FIFOstate = 0;
 
 
   //Maps used in decoding frames; specifically, holds record header and record waveform info
   std::map<std::vector<int>, uint64_t> TriggerTimeBank;  //Key: {cardID, channelID}. Value: trigger time associated with wave in WaveBank 
   std::map<std::vector<int>, std::vector<uint16_t>> WaveBank;  //Key: {cardID, channelID}. Value: Waveform being built for this Card and ADC Channel. 
   std::map<int,std::vector<uint64_t>> SyncCounters; //Key: cardID.  Value: vector of sync counters filled in the order they arrive.
+ 
+  //Extra maps used for FIFO overflow info and TimestampsFromTheFuture
+  std::map<uint64_t, std::map<std::vector<int>, int> >* FIFOPMTWaves = nullptr;
+  std::map<uint64_t,std::map<std::vector<int>,uint64_t>>* TimestampsFromTheFuture = nullptr;
+  uint64_t LastGoodTimestamp = 0;
 
   //Maps that store completed waveforms from cards
   std::map<uint64_t, std::map<std::vector<int>, std::vector<uint16_t> > >* FinishedPMTWaves;  //Key: {MTCTime}, value: "WaveMap" with key (CardID,ChannelID), value FinishedWaveform

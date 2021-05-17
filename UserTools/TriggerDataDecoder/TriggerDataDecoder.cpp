@@ -15,11 +15,17 @@ bool TriggerDataDecoder::Initialise(std::string configfile, DataModel &data){
   TriggerMaskFile = "none";
   TriggerWordFile = "none";
   mode = "EventBuilding";
+  readtrigoverlap = 0;
+  storetrigoverlap = 0;
+  usecstore = 1;
 
   m_variables.Get("verbosity",verbosity);
   m_variables.Get("TriggerMaskFile",TriggerMaskFile);
   m_variables.Get("TriggerWordFile",TriggerWordFile);
   m_variables.Get("Mode",mode);
+  m_variables.Get("ReadTrigOverlap",readtrigoverlap);
+  m_variables.Get("StoreTrigOverlap",storetrigoverlap);
+  m_variables.Get("UseCStore",usecstore);
 
   if (mode != "EventBuilding" && mode != "Monitoring"){
     Log("TriggerDataDecoder tool: Specified mode of operation >> "+mode+" unknown. Use standard EventBuilding mode.",v_error,verbosity);
@@ -28,8 +34,10 @@ bool TriggerDataDecoder::Initialise(std::string configfile, DataModel &data){
 
   CurrentRunNum = -1;
   CurrentSubrunNum = -1;
+  CurrentPartNum = -1;
 
-  TimeToTriggerWordMap = new std::map<uint64_t,uint32_t>;
+  TimeToTriggerWordMap = new std::map<uint64_t,std::vector<uint32_t>>;
+  TimeToTriggerWordMapComplete = new std::map<uint64_t,std::vector<uint32_t>>;
   m_data->CStore.Set("PauseCTCDecoding",false);
 
   if(TriggerMaskFile!="none"){
@@ -41,6 +49,9 @@ bool TriggerDataDecoder::Initialise(std::string configfile, DataModel &data){
     TriggerWords = LoadTriggerWords(TriggerWordFile);    //maps trigger words to human-readable labels
     m_data->CStore.Set("TriggerWordMap",TriggerWords);
   }
+
+  loop_nr = 0;
+
 
   return true;
 }
@@ -59,6 +70,25 @@ bool TriggerDataDecoder::Execute(){
     //Clear decoding maps if a new run/subrun is encountered
     this->CheckForRunChange();
   
+    //Read in trigger overlap information from previous file (if desired)
+    if (loop_nr == 0){
+      if(readtrigoverlap){
+        BoostStore ReadTrigOverlap;
+        std::stringstream ss_trigoverlap;
+        ss_trigoverlap << "TrigOverlap_R"<<CurrentRunNum<<"S"<<CurrentSubrunNum<<"p"<<CurrentPartNum;
+        bool got_trig = ReadTrigOverlap.Initialise(ss_trigoverlap.str().c_str());
+        if (got_trig && (CurrentPartNum!=0)){
+          ReadTrigOverlap.Get("c1",c1);
+          ReadTrigOverlap.Get("c2",c2);
+          Log("TriggerDataDecoder tool: Got c1 = "+std::to_string(c1)+" and c2 = "+std::to_string(c2)+" from C1C2 store located at "+ss_trigoverlap.str(),v_message,verbosity);
+          have_c1 = true;
+          have_c2 = true;
+        } else {
+          Log("TriggerDataDecoder tool: Did not find trigger overlap file: "+ss_trigoverlap.str(),v_error,verbosity);
+        }
+      }
+    }
+
     //Get the TriggerData vector pointer from the CStore
     Log("TriggerDataDecoder Tool: Accessing TrigData vector in CStore",v_debug, verbosity);
     bool got_tdata = m_data->CStore.Get("TrigData",Tdata);
@@ -68,6 +98,7 @@ bool TriggerDataDecoder::Execute(){
     }
     bool new_ts_available = false;
     std::vector<uint32_t> aTimeStampData = Tdata->TimeStampData;
+    std::cout <<"aTimeStampData.size(): "<<aTimeStampData.size()<<std::endl;
     for(int i = 0; i < (int) aTimeStampData.size(); i++){
       if(verbosity>v_debug) std::cout<<"TriggerDataDecoder Tool: Loading next TrigData from entry's index " << i <<std::endl;
       new_ts_available = this->AddWord(aTimeStampData.at(i));
@@ -76,19 +107,32 @@ bool TriggerDataDecoder::Execute(){
           std::cout << "PARSED TRIGGER TIME: " << processed_ns.back() << std::endl;
           std::cout << "PARSED TRIGGER WORD: " << processed_sources.back() << std::endl;
         }
+        if (TimeToTriggerWordMapComplete->find(processed_ns.back()) != TimeToTriggerWordMapComplete->end()) TimeToTriggerWordMapComplete->at(processed_ns.back()).push_back(processed_sources.back());
+        else {
+          std::vector<uint32_t> timestamp_ns{processed_sources.back()};
+          TimeToTriggerWordMapComplete->emplace(processed_ns.back(),timestamp_ns);
+        }
         if(UseTrigMask){
           uint32_t recent_trigger_word = processed_sources.back();
           for(int j = 0; j<(int) TriggerMask.size(); j++){
             if(TriggerMask.at(j) == recent_trigger_word){
               m_data->CStore.Set("NewCTCDataAvailable",true);
               if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
-              TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());
+              if (TimeToTriggerWordMap->find(processed_ns.back()) != TimeToTriggerWordMap->end()) TimeToTriggerWordMap->at(processed_ns.back()).push_back(processed_sources.back());
+              else {
+                std::vector<uint32_t> timestamp_ns{processed_sources.back()};
+                TimeToTriggerWordMap->emplace(processed_ns.back(),timestamp_ns);
+              }
             }
           }
         } else {
           m_data->CStore.Set("NewCTCDataAvailable",true);
           if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
-          TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());
+          if (TimeToTriggerWordMap->find(processed_ns.back()) != TimeToTriggerWordMap->end()) TimeToTriggerWordMap->at(processed_ns.back()).push_back(processed_sources.back());
+          else {
+            std::vector<uint32_t> timestamp_ns{processed_sources.back()};
+            TimeToTriggerWordMap->emplace(processed_ns.back(),timestamp_ns);
+          }
         }
       }
     }
@@ -116,13 +160,21 @@ bool TriggerDataDecoder::Execute(){
               if(TriggerMask.at(j) == recent_trigger_word){
                 m_data->CStore.Set("NewCTCDataAvailable",true);
                 if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
-                TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());
+                if (TimeToTriggerWordMap->find(processed_ns.back()) != TimeToTriggerWordMap->end()) TimeToTriggerWordMap->at(processed_ns.back()).push_back(processed_sources.back());
+                else {
+                  std::vector<uint32_t> timestamp_ns{processed_sources.back()};
+                  TimeToTriggerWordMap->emplace(processed_ns.back(),timestamp_ns);
+                }
               }
             }
           } else {
             m_data->CStore.Set("NewCTCDataAvailable",true);
             if(verbosity>4) std::cout << "TRIGGER WORD BEING ADDED TO TRIGWORDMAP" << std::endl;
-            TimeToTriggerWordMap->emplace(processed_ns.back(),processed_sources.back());
+            if (TimeToTriggerWordMap->find(processed_ns.back()) != TimeToTriggerWordMap->end()) TimeToTriggerWordMap->at(processed_ns.back()).push_back(processed_sources.back());
+            else {
+              std::vector<uint32_t> timestamp_ns{processed_sources.back()};
+              TimeToTriggerWordMap->emplace(processed_ns.back(),timestamp_ns);
+            }
           }
         }     
       }
@@ -131,7 +183,12 @@ bool TriggerDataDecoder::Execute(){
 
   if(verbosity>3) Log("TriggerDataDecoder Tool: size of TimeToTriggerWordMap: "+to_string(TimeToTriggerWordMap->size()),v_message,verbosity); 
  
-  m_data->CStore.Set("TimeToTriggerWordMap",TimeToTriggerWordMap);
+  if (usecstore){
+    m_data->CStore.Set("TimeToTriggerWordMap",TimeToTriggerWordMap);
+    m_data->CStore.Set("TimeToTriggerWordMapComplete",TimeToTriggerWordMapComplete);
+  }
+
+  loop_nr++;
 
   return true;
 }
@@ -140,6 +197,18 @@ bool TriggerDataDecoder::Execute(){
 bool TriggerDataDecoder::Finalise(){
   //delete TimeToTriggerWordMap;	//DONT delete TimeToTriggerWordMap since it wil be deleted by the CStore automatically
   std::cout << "TriggerDataDecoder tool exitting" << std::endl;
+/*
+  if (storec1c2 != "none"){
+    ofstream StoreC1C2(storec1c2.c_str());
+    StoreC1C2 << "c1    "<<c1 << std::endl;
+    StoreC1C2 << "c2    "<<c2 << std::endl;
+    StoreC1C2.close();
+    
+    StoreC1C2.Set("c1",c1);
+    StoreC1C2.Set("c2",c2);
+    StoreC1C2.Save(storec1c2.c_str());
+  }*/
+
   return true;
 }
 
@@ -147,7 +216,9 @@ bool TriggerDataDecoder::AddWord(uint32_t word){
   bool new_timestamp_available = false;
   uint64_t payload = 0;
   uint32_t wordid = 0;
+  //std::cout <<"word: "<<word<<std::endl;
   if(word == 0xF1F0E5E7){
+    //std::cout <<"word = 0xF1F0E5E7"<<std::endl;
     have_c1 = false;
     c1 = 0;
     have_c2 = false;
@@ -158,17 +229,24 @@ bool TriggerDataDecoder::AddWord(uint32_t word){
 
   wordid = word>>24;
   payload = word & 0x00FFFFFF;
+  //std::cout <<"wordid: "<<wordid<<", payload: "<<payload<<std::endl;
 
   if(wordid == 0xC0){
+    //std::cout <<"wordid = 0xC0"<<std::endl;
     return new_timestamp_available;
   }
   else if (wordid == 0xC1 || wordid == 0xC3){
+    //std::cout <<"wordid is 0xC1 or 0xC3"<<std::endl;
     c1 = (payload&0x0000FFFF)<<24;
     have_c1 = true;
   } else if (wordid == 0xC2 || wordid == 0xC4){
+    //std::cout <<"wordid is 0xC2 or 0xC4"<<std::endl;
     c2 = payload << 40;
     have_c2 = true;
   } else {
+    //std::cout <<"have_c1: "<<have_c1<<std::endl;
+    //std::cout <<"have_c2: "<<have_c2<<std::endl;
+    //std::cout <<"c1: "<<c1<<", c2: "<<c2<<std::endl;
     if(have_c1 && have_c2){
       uint64_t ns = (c1 + c2 + payload)*8;
       processed_sources.push_back(wordid);
@@ -186,10 +264,12 @@ void TriggerDataDecoder::CheckForRunChange()
   m_data->CStore.Get("RunInfoPostgress",RunInfoPostgress);
   int RunNumber;
   int SubRunNumber;
+  int PartNumber;
   uint64_t StarTime;
   int RunType;
   RunInfoPostgress.Get("RunNumber",RunNumber);
   RunInfoPostgress.Get("SubRunNumber",SubRunNumber);
+  RunInfoPostgress.Get("PartNumber",PartNumber);
   RunInfoPostgress.Get("RunType",RunType);
   RunInfoPostgress.Get("StarTime",StarTime);
 
@@ -197,6 +277,7 @@ void TriggerDataDecoder::CheckForRunChange()
   if (CurrentRunNum == -1){
     CurrentRunNum = RunNumber;
     CurrentSubrunNum = SubRunNumber;
+    CurrentPartNum = PartNumber;
   }
   else if (RunNumber != CurrentRunNum){ //New run has been encountered
     Log("TriggerDataDecoder Tool: New run encountered.  Clearing event building maps",v_message,verbosity); 
@@ -206,6 +287,19 @@ void TriggerDataDecoder::CheckForRunChange()
     Log("TriggerDataDecoder Tool: New subrun encountered.",v_message,verbosity); 
     TimeToTriggerWordMap->clear();
   }
+  else if (PartNumber != CurrentPartNum){ // New part file has been encountered
+   if (storetrigoverlap){
+     BoostStore StoreTrigOverlap;
+     std::stringstream ss_trig_overlap;
+     ss_trig_overlap << "TrigOverlap_R"<<RunNumber<<"S"<<SubRunNumber<<"p"<<PartNumber;
+     bool store_exist = StoreTrigOverlap.Initialise(ss_trig_overlap.str().c_str());
+     StoreTrigOverlap.Set("c1",c1);
+     StoreTrigOverlap.Set("c2",c2);
+     StoreTrigOverlap.Save(ss_trig_overlap.str().c_str());
+   }
+   CurrentPartNum = PartNumber;
+  }
+
   return;
 }
 

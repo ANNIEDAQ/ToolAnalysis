@@ -1,11 +1,15 @@
 verbosity 5
 
 BuildType Tank
-ProcessedFilesBasename ProcessedRawData_TankOnly_
+ProcessedFilesBasename ProcessedRawData
+OrphanFileBase OrphanStore
 SavePath ./
 
-MinNumWavesInSet 140 // 1=Just throw any waveforms into ANNIE events if you got em
+MinNumWavesInSet 134 // 1=Just throw any waveforms into ANNIE events if you got em
 
 ExecutesPerBuild 10
-OrphanOldTankTimestamps 0
+OrphanOldTankTimestamps 1
 OldTimestampThreshold 150
+
+SaveRawData 0
+StoreBeamStatus 1

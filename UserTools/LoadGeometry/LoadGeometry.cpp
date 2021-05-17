@@ -68,6 +68,7 @@ bool LoadGeometry::Initialise(std::string configfile, DataModel &data){
   ChannelNumToTankPMTCrateSpaceMap = new std::map<int,std::vector<int>>;
   AuxCrateSpaceToChannelNumMap = new std::map<std::vector<int>,int>;
   AuxChannelNumToTypeMap = new std::map<int,std::string>;
+  AuxChannelNumToCrateSpaceMap = new std::map<int,std::vector<int>>;
   LAPPDCrateSpaceToChannelNumMap = new std::map<std::vector<unsigned int>,int>;
 
   //Initialize the geometry using the geometry CSV file entries
@@ -96,6 +97,7 @@ bool LoadGeometry::Initialise(std::string configfile, DataModel &data){
   m_data->CStore.Set("ChannelNumToTankPMTCrateSpaceMap",ChannelNumToTankPMTCrateSpaceMap);
   m_data->CStore.Set("ChannelNumToTankPMTSPEChargeMap",ChannelNumToTankPMTSPEChargeMap);
   m_data->CStore.Set("AuxCrateSpaceToChannelNumMap",AuxCrateSpaceToChannelNumMap);
+  m_data->CStore.Set("AuxChannelNumToCrateSpaceMap",AuxChannelNumToCrateSpaceMap);
   m_data->CStore.Set("AuxChannelNumToTypeMap",AuxChannelNumToTypeMap);
   m_data->CStore.Set("LAPPDCrateSpaceToChannelNumMap",LAPPDCrateSpaceToChannelNumMap);
    //AnnieGeometry->GetChannel(0); // trigger InitChannelMap
@@ -456,6 +458,12 @@ bool LoadGeometry::ParseAuxChannelDataEntry(std::vector<std::string> SpecLine,
     AuxCrateSpaceToChannelNumMap->emplace(crate_map, channel_num);
   } else {
     Log("LoadGeometry Tool: ERROR: Tried assigning an Auxiliary Channel channel_num to a crate space already defined!!! ",v_error, verbosity);
+    Log("LoadGeometry Tool: ERROR DETAILS: Signal Crate = "+std::to_string(signal_crate)+", Signal Slot = "+std::to_string(signal_slot)+", Signal Channel = "+std::to_string(signal_channel),v_error,verbosity);
+  }
+  if(AuxChannelNumToCrateSpaceMap->count(channel_num)==0){
+    AuxChannelNumToCrateSpaceMap->emplace(channel_num,crate_map);
+  } else {
+    Log("LoadGeometry Tool: ERROR: Tried assigning a crate space to an Auxiliary Channel already defined!!! ",v_error, verbosity);
     Log("LoadGeometry Tool: ERROR DETAILS: Signal Crate = "+std::to_string(signal_crate)+", Signal Slot = "+std::to_string(signal_slot)+", Signal Channel = "+std::to_string(signal_channel),v_error,verbosity);
   }
   if(AuxChannelNumToTypeMap->count(channel_num)==0){

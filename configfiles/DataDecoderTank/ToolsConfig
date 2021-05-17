@@ -2,3 +2,5 @@ myLoadGeometry LoadGeometry ./configfiles/DataDecoderTank/LoadGeometryConfig
 myLoadRawData LoadRawData ./configfiles/DataDecoderTank/LoadRawDataConfig
 myPMTDataDecoder PMTDataDecoder ./configfiles/DataDecoderTank/PMTDataDecoderConfig
 myANNIEEventBuilder ANNIEEventBuilder ./configfiles/DataDecoderTank/ANNIEEventBuilderConfig
+PhaseIIADCCalibrator PhaseIIADCCalibrator ./configfiles/DataDecoderTank/PhaseIIADCCalibratorConfig
+PhaseIIADCHitFinder PhaseIIADCHitFinder ./configfiles/DataDecoderTank/PhaseIIADCHitFinderConfig

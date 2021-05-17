@@ -1,24 +1,29 @@
 # DataSummary config file
 
 verbosity 10
-DataPath /pnfs/annie/persistent/users/pershint/ProcessedData/BeamData2019_2020/BeamRuns_FirstPass
+#DataPath /pnfs/annie/persistent/users/mnieslon/data/processed/R2280
+#FileList ./configfiles/DataSummary/my_files.txt		#If regex search is wanted, specify -None- here
+FileList None
+DataPath .
 
 # input files will be found by a regex search. All subdirectories within DataPath will be searched.
 # Filenames must at minimum end with 'R**S**p**', which is used to extract the run, subrun and part numbers
 # To restrict the search further a regular expression 'InputFilePattern' may be given.
 # filenames must then be of the form [anything][InputFilePattern][RXXXSYYYpZZZ]
-InputFilePattern ProcessedRawData_TankMRD
+InputFilePattern ProcessedRawData_TankAndMRDAndCTC_
 # /pnfs/annie/persistent/users/pershint/ProcessedData/BeamData2019_2020/BeamRuns_FirstPass/ProcessedRawData_TankMRDR1623S0p2
+InputFilePatternOrphan OrphanStore_TankAndMRDAndCTC_
+FileFormat SeparateStores
 
 # specify range of data to analyse. Use -1 to match anything.
-StartRun 1628
+StartRun 1604
 StartSubRun 0
 StartPart 0
-EndRun -1
+EndRun 1604
 EndSubRun -1
-EndPart -1
+EndPart 0
 
 # ROOT file output
 OutputFileDir .
-OutputFileName DataSummary.root
+OutputFileName DataSummary_R1604_S0p0.root
 

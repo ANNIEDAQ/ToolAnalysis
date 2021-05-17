@@ -119,9 +119,9 @@ if (tool=="ClusterClassifiers") ret=new ClusterClassifiers;
 if (tool=="MRDLoopbackAnalysis") ret=new MRDLoopbackAnalysis;
 if (tool=="VetoEfficiency") ret=new VetoEfficiency;
 if (tool=="MonitorTrigger") ret=new MonitorTrigger;
-
 if (tool=="EventClassification") ret=new EventClassification;
-
 if (tool=="DataSummary") ret=new DataSummary;
+if (tool=="BeamDecoder") ret=new BeamDecoder;
+if (tool=="LoadRunInfo") ret=new LoadRunInfo;
 return ret;
 }

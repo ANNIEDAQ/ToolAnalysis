@@ -33,6 +33,13 @@ bool PhaseIIADCCalibrator::Initialise(std::string config_filename, DataModel& da
   // get config variables: general
   m_variables.Get("verbosity", verbosity);
  
+  // get config variables: Event Building mode?
+  m_variables.Get("EventBuilding",eventbuilding_mode);
+  if (eventbuilding_mode != false && eventbuilding_mode != true){
+    Log("PhaseIIADCCalibrator: Event Building mode not recognized. Default to false",v_warning,verbosity);
+    eventbuilding_mode = false;
+  }
+
   //Set defaults in case config file has no entries
   adc_window_db = "none";
   make_led_waveforms = false;
@@ -109,18 +116,48 @@ bool PhaseIIADCCalibrator::Initialise(std::string config_filename, DataModel& da
   }
 
 
-  
-
   if(adc_window_db != "none") channel_window_map = this->load_window_map(adc_window_db);
 
   m_data->CStore.Set("NumBaselineSamples",num_baseline_samples);
 
+
+  m_data->CStore.Set("NewCalibratedData",false);
+  m_data->CStore.Get("TankPMTCrateSpaceToChannelNumMap",TankPMTCrateSpaceToChannelNumMap);
+  m_data->CStore.Get("AuxCrateSpaceToChannelNumMap",AuxCrateSpaceToChannelNumMap);
+
+  if (eventbuilding_mode){
+
+    FinishedRawWaveforms = new std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>>;
+    FinishedRawWaveformsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>>;
+    FinishedCalibratedWaveforms = new std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>>;
+    FinishedCalibratedWaveformsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>>;
+    FinishedCalibratedLEDADCData = new std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>>;
+    FinishedRawLEDADCData = new std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>>;
+    FinishedRawAcqSize = new std::map<uint64_t, std::map<unsigned long, std::vector<int>>>;
+    m_data->CStore.Set("FinishedRawWaveforms",FinishedRawWaveforms);
+    m_data->CStore.Set("FinishedRawWaveformsAux",FinishedRawWaveformsAux);
+    m_data->CStore.Set("FinishedRawAcqSize",FinishedRawAcqSize);
+    m_data->CStore.Set("FinishedCalibratedWaveforms",FinishedCalibratedWaveforms);
+    m_data->CStore.Set("FinishedCalibratedWaveformsAux",FinishedCalibratedWaveformsAux);
+    m_data->CStore.Set("FinishedCalibratedLEDADCData",FinishedCalibratedLEDADCData);
+    m_data->CStore.Set("FinishedRawLEDADCData",FinishedRawLEDADCData);
+    m_data->CStore.Set("NewCalibratedData",true);
+
+    bool get_executes;
+    get_executes = m_variables.Get("ExecutesPerBuild",ExecutesPerBuild);
+    if (!get_executes) ExecutesPerBuild = 10;
+    ExecuteCount = 0;
+  }
   return true;
 }
 
 bool PhaseIIADCCalibrator::Execute() {
   
   Log("PhaseIIADCCalibrator Tool: Executing", v_message, verbosity);
+
+
+  //ANNIEEvent mode
+  if (eventbuilding_mode == false){
 
   // Get a pointer to the ANNIEEvent Store
   auto* annie_event = m_data->Stores["ANNIEEvent"];
@@ -152,6 +189,8 @@ bool PhaseIIADCCalibrator::Execute() {
       verbosity);
     return false;
   }
+
+
 
   // Build the calibrated waveforms
   std::map<unsigned long, std::vector<CalibratedADCWaveform<double> > >
@@ -240,7 +279,240 @@ bool PhaseIIADCCalibrator::Execute() {
     annie_event->Set("CalibratedLEDADCData", calibrated_led_waveform_map);
     annie_event->Set("RawLEDADCData", raw_led_waveform_map);
   }
-  std::cout <<"Set CalibratedADCData"<<std::endl;
+  //std::cout <<"Set CalibratedADCData"<<std::endl;
+  } else {
+    //=========================
+    //Event Building mode (new)
+    //=========================
+  
+    ExecuteCount += 1;
+    bool toolchain_stopping=false;
+    m_data->vars.Get("StopLoop",toolchain_stopping);
+    if (ExecuteCount < ExecutesPerBuild && !(toolchain_stopping)) return true;
+
+    bool new_tank_events = false;
+    //m_data->CStore.Get("NewTankEvents",new_tank_events);    
+    m_data->CStore.Get("NewTankPMTDataAvailable",new_tank_events);
+    if (!new_tank_events) return true;	//Don't do anything if no new tank data is available
+
+    //m_data->CStore.Get("FinishedTankEvents",FinishedTankEvents);
+    m_data->CStore.Get("InProgressTankEvents",InProgressTankEvents);
+
+    bool new_data = false;
+    std::vector<uint64_t> RawTimestampsToDelete;
+
+    //Loop over FinishedTankEvents, fill FinishedCalibratedWaveforms
+    //for(std::pair<uint64_t,std::map<std::vector<int>, std::vector<uint16_t>>> apair : *FinishedTankEvents){
+    for(std::pair<uint64_t,std::map<std::vector<int>, std::vector<uint16_t>>> apair : *InProgressTankEvents){
+      uint64_t PMTCounterTime = apair.first;
+      //std::cout <<"PMTCounterTime: "<<PMTCounterTime<<", waveform size: "<<apair.second.size()<<std::endl;
+
+      //Check if the timestamp was already processed
+      //if (FinishedRawWaveforms->count(PMTCounterTime) != 0) continue;
+      new_data = true;
+      RawTimestampsToDelete.push_back(PMTCounterTime);
+      std::map<std::vector<int>, std::vector<uint16_t>> aWaveMap = apair.second;
+      std::map<unsigned long, std::vector<Waveform<uint16_t>> > RawADCData;
+      std::map<unsigned long, std::vector<Waveform<uint16_t>> > RawADCAuxData;
+//      if (FinishedRawWaveforms->count(PMTCounterTime)>0) RawADCData = FinishedRawWaveforms->at(PMTCounterTime);
+//      if (FinishedRawWaveformsAux->count(PMTCounterTime)>0) RawADCAuxData = FinishedRawWaveformsAux->at(PMTCounterTime);
+      for(std::pair<std::vector<int>, std::vector<uint16_t>> apair : aWaveMap){
+        int CardID = apair.first.at(0);
+        int ChannelID = apair.first.at(1);
+        int CrateNum=-1;
+        int SlotNum=-1;
+        this->CardIDToElectronicsSpace(CardID, CrateNum, SlotNum);
+        std::vector<uint16_t> TheWaveform = apair.second;
+        Waveform<uint16_t> TheWave(PMTCounterTime, TheWaveform);
+        //Placing waveform in a vector in case we want a hefty-mode minibuffer storage eventually
+        std::vector<Waveform<uint16_t>> WaveVec{TheWave};
+  
+        std::vector<int> CrateSpace{CrateNum,SlotNum,ChannelID};
+        unsigned long ChannelKey;
+        if(TankPMTCrateSpaceToChannelNumMap.count(CrateSpace)>0){
+          ChannelKey = TankPMTCrateSpaceToChannelNumMap.at(CrateSpace);
+          RawADCData.emplace(ChannelKey,WaveVec);
+        }
+        else if (AuxCrateSpaceToChannelNumMap.count(CrateSpace)>0){
+          ChannelKey = AuxCrateSpaceToChannelNumMap.at(CrateSpace);
+          RawADCAuxData.emplace(ChannelKey,WaveVec);
+        } else{
+          Log("PhaseIIADCCalibrator:: Cannot find channel key for crate space entry: ",v_error, verbosity);
+          Log("PhaseIIADCCalibrator::CrateNum "+to_string(CrateNum),v_error, verbosity);
+          Log("PhaseIIADCCalibrator::SlotNum "+to_string(SlotNum),v_error, verbosity);
+          Log("PhaseIIADCCalibrator::ChannelID "+to_string(ChannelID),v_error, verbosity);
+          Log("PhaseIIADCCalibrator::Passing over the wave; PMT DATA LOST",v_error, verbosity);
+          continue;
+        }
+      }
+
+      //Build raw waveform acquisition size
+      std::map<unsigned long, std::vector<int>> waveform_acq_size;
+//      if (FinishedRawAcqSize->count(PMTCounterTime)>0) waveform_acq_size = FinishedRawAcqSize->at(PMTCounterTime);
+      for (auto& temp_pair : RawADCData) {
+        const auto& achannel_key = temp_pair.first;
+        auto& araw_waveforms = temp_pair.second;
+        for (unsigned int i=0; i< araw_waveforms.size(); i++){
+          auto samples = araw_waveforms.at(i).GetSamples();
+          int size_sample = samples->size();
+          if (waveform_acq_size.count(achannel_key) > 0) waveform_acq_size.at(achannel_key).push_back(size_sample);
+          else {
+            std::vector<int> temp_size{size_sample};
+            waveform_acq_size.emplace(achannel_key,temp_size);
+          }
+        }
+      }
+
+      // Build the calibrated waveforms
+      std::map<unsigned long, std::vector<CalibratedADCWaveform<double> > > calibrated_waveform_map;
+      // Build the calibrated waveforms
+      std::map<unsigned long, std::vector<CalibratedADCWaveform<double> > > calibrated_auxwaveform_map;
+
+
+      // Load the map containing the ADC raw waveform data
+      std::map<unsigned long, std::vector<Waveform<unsigned short> > > raw_led_waveform_map;
+      std::map<unsigned long, std::vector<CalibratedADCWaveform<double> > > calibrated_led_waveform_map;
+/*
+      if (FinishedCalibratedWaveforms->count(PMTCounterTime)>0) calibrated_waveform_map = FinishedCalibratedWaveforms->at(PMTCounterTime);
+      if (FinishedCalibratedWaveformsAux->count(PMTCounterTime)>0) calibrated_auxwaveform_map = FinishedCalibratedWaveformsAux->at(PMTCounterTime);
+
+      if (make_led_waveforms){
+        if (FinishedCalibratedLEDADCData->count(PMTCounterTime)>0) calibrated_led_waveform_map = FinishedCalibratedLEDADCData->at(PMTCounterTime);
+        if (FinishedRawLEDADCData->count(PMTCounterTime)>0) raw_led_waveform_map = FinishedRawLEDADCData->at(PMTCounterTime);
+      }*/
+
+      //Calibrate raw detector waveforms
+      for (const auto& temp_pair : RawADCData) {
+        const auto& channel_key = temp_pair.first;
+        //Default running: raw_waveforms only has one entry.  If we go to a
+        //hefty-mode style of running though, this could have multiple minibuffers
+        const auto& raw_waveforms = temp_pair.second;
+        //std::cout <<"Calibrate raw detector waveforms for channel "<<channel_key<<std::endl;
+        Log("Making calibrated waveforms for ADC channel " +  std::to_string(channel_key), 3, verbosity);
+
+        if(BEType == "ze3ra"){
+          calibrated_waveform_map[channel_key] = make_calibrated_waveforms_ze3ra(raw_waveforms);
+        } else if(BEType == "ze3ra_multi"){
+          calibrated_waveform_map[channel_key] = make_calibrated_waveforms_ze3ra_multi(raw_waveforms);
+        } else if(BEType == "rootfit"){
+          calibrated_waveform_map[channel_key] = make_calibrated_waveforms_rootfit(raw_waveforms);
+        } else if (BEType == "simple"){
+          calibrated_waveform_map[channel_key] = make_calibrated_waveforms_simple(raw_waveforms);
+        }
+        //std::cout <<"temp_calibrated_waveform_map.size(): "<<temp_calibrated_waveform_map[channel_key].size()<<", raw size: "<<raw_waveforms.size()<<std::endl;
+
+/*
+	if (raw_waveforms.at(0).Samples().size() != temp_calibrated_waveform_map[channel_key].at(0).Samples().size()){
+		std::cout <<"PhaseIIADCCalibrator: raw_waveforms.size(): "<<raw_waveforms.at(0).Samples().size()<<", temp_calibrated_waveforms.size(): "<<temp_calibrated_waveform_map[channel_key].at(0).Samples().size()<<std::endl;
+	}
+
+        for (std::pair<unsigned long, std::vector<CalibratedADCWaveform<double>>> apair : temp_calibrated_waveform_map){
+          unsigned long chkey = apair.first;
+          std::vector<CalibratedADCWaveform<double>> calib_wave = apair.second;
+          for (int i_wave=0; i_wave  < calib_wave.size(); i_wave++){
+            if (calibrated_waveform_map.count(chkey)>0) calibrated_waveform_map[chkey].push_back(calib_wave.at(i_wave));
+            else calibrated_waveform_map.emplace(chkey,std::vector<CalibratedADCWaveform<double>>{calib_wave.at(i_wave)});
+          }
+        }*/
+
+        if(make_led_waveforms){
+          Log("Also making LED window waveforms for ADC channel " + std::to_string(channel_key), 3, verbosity);
+          std::vector<Waveform<unsigned short>> LEDWaveforms;
+          this->make_raw_led_waveforms(channel_key,raw_waveforms,LEDWaveforms);
+          raw_led_waveform_map.emplace(channel_key,LEDWaveforms);
+          if(BEType == "ze3ra"){
+            calibrated_led_waveform_map[channel_key] = make_calibrated_waveforms_ze3ra(LEDWaveforms);
+          } else if(BEType == "ze3ra_multi"){
+            calibrated_led_waveform_map[channel_key] = make_calibrated_waveforms_ze3ra_multi(LEDWaveforms);
+          } else if(BEType == "rootfit"){
+            calibrated_led_waveform_map[channel_key] = make_calibrated_waveforms_rootfit(LEDWaveforms);
+          } else if(BEType == "simple"){
+            calibrated_led_waveform_map[channel_key] = make_calibrated_waveforms_simple(LEDWaveforms);
+          }
+/*
+        for (std::pair<unsigned long, std::vector<CalibratedADCWaveform<double>>> apair : temp_calibrated_led_waveform_map){
+          unsigned long chkey = apair.first;
+          std::vector<CalibratedADCWaveform<double>> calib_wave = apair.second;
+          for (int i_wave=0; i_wave  < calib_wave.size(); i_wave++){
+            if (calibrated_led_waveform_map.count(chkey)>0) calibrated_led_waveform_map[chkey].push_back(calib_wave.at(i_wave));
+            else calibrated_led_waveform_map.emplace(chkey,std::vector<CalibratedADCWaveform<double>>{calib_wave.at(i_wave)});
+          }
+        }*/
+        }
+      }
+  
+      //Calibrate the SIPM waveforms
+      for (const auto& temp_pair : RawADCAuxData) {
+        const auto& channel_key = temp_pair.first;
+        Log("Channel key for Aux channel is " + std::to_string(channel_key), 3, verbosity);
+        //For now, only calibrate the SiPM waveforms
+        Log("Type for Aux channel is " + AuxChannelNumToTypeMap->at(channel_key), 3, verbosity);
+        if(AuxChannelNumToTypeMap->at(channel_key) != "SiPM1" && AuxChannelNumToTypeMap->at(channel_key) != "SiPM2") continue; 
+        //Default running: raw_waveforms only has one entry.  If we go to a
+        //hefty-mode style of running though, this could have multiple minibuffers
+        const auto& raw_auxwaveforms = temp_pair.second;
+
+        Log("Making calibrated waveforms for Auxiliary channel " + std::to_string(channel_key), 3, verbosity);
+
+        if(BEType == "ze3ra"){
+          calibrated_auxwaveform_map[channel_key] = make_calibrated_waveforms_ze3ra(raw_auxwaveforms);
+        } else if(BEType == "ze3ra_multi"){
+          calibrated_auxwaveform_map[channel_key] = make_calibrated_waveforms_ze3ra_multi(raw_auxwaveforms);
+        } else if(BEType == "rootfit"){
+          calibrated_auxwaveform_map[channel_key] = make_calibrated_waveforms_rootfit(raw_auxwaveforms);
+        } else if (BEType == "simple"){
+          calibrated_auxwaveform_map[channel_key] = make_calibrated_waveforms_simple(raw_auxwaveforms);
+        }
+        /*for (std::pair<unsigned long, std::vector<CalibratedADCWaveform<double>>> apair : temp_calibrated_auxwaveform_map){
+          unsigned long chkey = apair.first;
+          std::vector<CalibratedADCWaveform<double>> calib_wave = apair.second;
+          for (int i_wave=0; i_wave  < calib_wave.size(); i_wave++){
+            if (calibrated_auxwaveform_map.count(chkey)>0) calibrated_auxwaveform_map[chkey].push_back(calib_wave.at(i_wave));
+            else calibrated_auxwaveform_map.emplace(chkey,std::vector<CalibratedADCWaveform<double>>{calib_wave.at(i_wave)});
+          }
+        }*/
+
+      }
+
+      Log("PhaseIIADCCalibrator Tool: Setting CalibratedADCData",v_debug,verbosity);
+      //std::cout <<"RawADCData.size(): "<<RawADCData.size()<<", Calibrated waveforms size: "<<calibrated_waveform_map.size()<<std::endl;
+
+      FinishedRawAcqSize->emplace(PMTCounterTime,waveform_acq_size);
+      FinishedRawWaveforms->emplace(PMTCounterTime,RawADCData);
+      FinishedRawWaveformsAux->emplace(PMTCounterTime,RawADCAuxData);
+      FinishedCalibratedWaveforms->emplace(PMTCounterTime,calibrated_waveform_map);
+      FinishedCalibratedWaveformsAux->emplace(PMTCounterTime,calibrated_auxwaveform_map);
+      if(make_led_waveforms){
+        std::cout <<"Setting LEDADCData"<<std::endl;
+        FinishedCalibratedLEDADCData->emplace(PMTCounterTime,calibrated_led_waveform_map);
+        FinishedRawLEDADCData->emplace(PMTCounterTime,raw_led_waveform_map);
+      }
+      //std::cout <<"Set CalibratedADCData"<<std::endl;
+    }
+
+    for (int i_del=0; i_del < (int) RawTimestampsToDelete.size(); i_del++){
+      //FinishedTankEvents->erase(RawTimestampsToDelete.at(i_del));
+      InProgressTankEvents->erase(RawTimestampsToDelete.at(i_del));
+      //std::map<std::vector<int>, std::vector<uint16_t>> aRawWaveform = InProgressTankEvents->at(RawTimestampsToDelete.at(i_del));
+      //aRawWaveform.clear();
+    }
+
+    if (new_data){
+      m_data->CStore.Set("FinishedRawWaveforms",FinishedRawWaveforms);
+      m_data->CStore.Set("FinishedRawWaveformsAux",FinishedRawWaveformsAux);
+      m_data->CStore.Set("FinishedRawAcqSize",FinishedRawAcqSize);
+      m_data->CStore.Set("FinishedCalibratedWaveforms",FinishedCalibratedWaveforms);
+      m_data->CStore.Set("FinishedCalibratedWaveformsAux",FinishedCalibratedWaveformsAux);
+      if (make_led_waveforms){
+        m_data->CStore.Set("FinishedCalibratedLEDADCData",FinishedCalibratedLEDADCData);
+        m_data->CStore.Set("FinishedRawLEDADCData",FinishedRawLEDADCData);
+      }
+      m_data->CStore.Set("NewCalibratedData",true);
+      }
+
+      ExecuteCount = 0;
+    }
+
 
   return true;
 }
@@ -485,6 +757,7 @@ PhaseIIADCCalibrator::make_calibrated_waveforms_ze3ra_multi(
         } else if (asample >= RepresentationRegion.back()){
           cal_data.push_back((static_cast<double>(asample) - baselines.back())
             * ADC_TO_VOLT);
+          break;
         }
       }
     }
@@ -970,4 +1243,14 @@ std::map<unsigned long, std::vector<std::vector<int>>> PhaseIIADCCalibrator::loa
         1, verbosity);
   }
   return chanwindowmap;
+}
+
+void PhaseIIADCCalibrator::CardIDToElectronicsSpace(int CardID,
+        int &CrateNum, int &SlotNum)
+{
+  //CardID = CrateNum * 1000 + SlotNum.  This logic works if we have less than
+  // 10 crates and less than 100 Slots (which we do).
+  SlotNum = CardID % 100;
+  CrateNum = CardID / 1000;
+  return;
 }

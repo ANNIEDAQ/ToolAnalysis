@@ -58,7 +58,8 @@ class PhaseIIADCHitFinder : public Tool {
     int pulse_window_end_shift;
     std::map<unsigned long, unsigned short> channel_threshold_map;
     std::map<unsigned long, std::vector<std::vector<int>>> channel_window_map;
-    
+    bool eventbuilding_mode; 
+   
    
     std::map<int,std::string>* AuxChannelNumToTypeMap;
 
@@ -78,6 +79,8 @@ class PhaseIIADCHitFinder : public Tool {
 
     std::map<unsigned long, std::vector< std::vector<ADCPulse>> > aux_pulse_map;
     std::map<unsigned long,std::vector<Hit>>* aux_hit_map;
+
+    std::vector<unsigned long> chkey_map;
 
     // Load a PMT's threshold from the channel_threshold_map. If none, returns default ADC threshold
     unsigned short get_db_threshold(unsigned long channelkey);
@@ -114,6 +117,21 @@ class PhaseIIADCHitFinder : public Tool {
 
     //Takes the ADC pulse vectors (one per minibuffer) and converts them to a vector of hits
     std::vector<Hit> convert_adcpulses_to_hits(unsigned long channel_key,std::vector<std::vector<ADCPulse>> pulses);
+
+    //EventBuilding mode
+    std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>> *FinishedRawWaveforms;      //Key: {MTCTime}, value: map of raw waveforms
+    std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>> *FinishedRawWaveformsAux;  //Key: {MTCTime}, value: map of raw waveforms (aux channels)
+    std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>> *FinishedCalibratedWaveforms;  //Key: {MTCTime}, value: map of calibrated waveforms
+    std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>> *FinishedCalibratedWaveformsAux;  //Key: {MTCTime}, value: map of calibrated waveforms (aux channels)
+    std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*> *InProgressHits;	//Key: {MTCTime}, value: map of  Hit distributions
+    std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*> *InProgressHitsAux;	//Key: {MTCTime}, value: map of  Hit distributions
+    std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>> *InProgressRecoADCHits; //Key: {MTCTime}, value: map of found pulses
+    std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>> *InProgressRecoADCHitsAux; //Key: {MTCTime}, value: map of found pulses
+    std::map<uint64_t, std::vector<unsigned long>> *InProgressChkey;	//Key: {MTCTime}, value: vector of in progress chankeys
+    //std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*> *FinishedHits;	//Key: {MTCTime}, value: map of  Hit distributions
+    //std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*> *FinishedHitsAux;	//Key: {MTCTime}, value: map of  Hit distributions
+    //std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>> *FinishedRecoADCHits; //Key: {MTCTime}, value: map of found pulses
+    //std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>> *FinishedRecoADCHitsAux; //Key: {MTCTime}, value: map of found pulses
 
 };
 

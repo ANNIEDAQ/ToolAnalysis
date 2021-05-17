@@ -199,7 +199,7 @@ bool LoadWCSim::Initialise(std::string configfile, DataModel &data){
 	MCHits = new std::map<unsigned long,std::vector<MCHit>>;
 	TDCData = new std::map<unsigned long,std::vector<MCHit>>;
 	EventTime = new TimeClass();
-	TriggerClass beamtrigger("beam",true,0);
+	TriggerClass beamtrigger("beam",5,0,true,0);
 	TriggerData = new std::vector<TriggerClass>{beamtrigger}; // FIXME ? one trigger and resetting time is ok?
 	
 	// we'll put these in the CStore: so don't delete them in Finalise! It'll get handled by the Store

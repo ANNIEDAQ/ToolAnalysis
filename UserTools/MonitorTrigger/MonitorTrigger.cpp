@@ -415,7 +415,7 @@ void MonitorTrigger::InitializeHists(){
 
 }
 
-void MonitorTrigger::LoopThroughDecodedEvents(std::map<uint64_t,uint32_t> timetotriggerword){
+void MonitorTrigger::LoopThroughDecodedEvents(std::map<uint64_t,std::vector<uint32_t>> timetotriggerword){
 
   Log("MonitorTrigger: LoopThroughDecodedEvents",v_message,verbosity);
 
@@ -430,17 +430,18 @@ void MonitorTrigger::LoopThroughDecodedEvents(std::map<uint64_t,uint32_t> timeto
   frequency_file.assign(num_triggerwords,0);
 
   int i_timestamp = 0;
-  for (std::map<uint64_t, uint32_t>::iterator it = timetotriggerword.begin(); it != timetotriggerword.end(); it++){
+  for (std::map<uint64_t, std::vector<uint32_t>>::iterator it = timetotriggerword.begin(); it != timetotriggerword.end(); it++){
 
     uint64_t timestamp = it->first;
     uint64_t timestamp_temp = timestamp - utc_to_fermi;
-    timestamp_file.push_back(timestamp_temp);
-    uint32_t trigword = it->second-1;	//Triggerwords in timetotriggerword are index+1, subtract 1 to get index
-    triggerword_file.push_back(trigword);
-
-    frequency_file.at(trigword)++;
-
-    i_timestamp++;
+    std::vector<uint32_t> trigword_vec = it->second;
+    for (int i_trig=0; i_trig < (int) trigword_vec.size(); i_trig++){
+      timestamp_file.push_back(timestamp_temp);
+      uint32_t trigword = trigword_vec.at(i_trig)-1;	//Triggerwords in timetotriggerword are index+1, subtract 1 to get index
+      triggerword_file.push_back(trigword);
+      frequency_file.at(trigword)++;
+      i_timestamp++;
+    }
   }
 
 }

@@ -129,3 +129,5 @@
 #include "MonitorTrigger.h"
 #include "EventClassification.h"
 #include "DataSummary.h"
+#include "BeamDecoder.h"
+#include "LoadRunInfo.h"

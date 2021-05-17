@@ -1,0 +1,3 @@
+LoadGeometry LoadGeometry ./configfiles/LoadGeometry/LoadGeometryConfig
+LoadRawData LoadRawData ./configfiles/PreProcessTrigOverlap/LoadRawDataConfig
+TriggerDataDecoder TriggerDataDecoder ./configfiles/PreProcessTrigOverlap/TriggerDataDecoderConfig

@@ -22,6 +22,7 @@ bool PhaseIIADCHitFinder::Initialise(std::string config_filename, DataModel& dat
   pulse_window_start_shift = -3;
   pulse_window_end_shift = 25;
   adc_window_db = "none"; //Used when pulse_finding_approach="fixed_windows"
+  eventbuilding_mode = false;
 
   //Load any configurables set in the config file
   m_variables.Get("verbosity",verbosity); 
@@ -34,6 +35,7 @@ bool PhaseIIADCHitFinder::Initialise(std::string config_filename, DataModel& dat
   m_variables.Get("PulseWindowStart", pulse_window_start_shift);
   m_variables.Get("PulseWindowEnd", pulse_window_end_shift);
   m_variables.Get("WindowIntegrationDB", adc_window_db); 
+  m_variables.Get("EventBuilding",eventbuilding_mode);
 
   if ((pulse_window_start_shift > 0) || (pulse_window_end_shift) < 0){
     Log("PhaseIIADCHitFinder Tool: WARNING... trigger threshold crossing will not be inside pulse window.  Threshold" 
@@ -58,6 +60,11 @@ bool PhaseIIADCHitFinder::Initialise(std::string config_filename, DataModel& dat
   if(adc_threshold_db != "none") channel_threshold_map = this->load_channel_threshold_map(adc_threshold_db);
   if(adc_window_db != "none") channel_window_map = this->load_integration_window_map(adc_window_db);
 
+  if (eventbuilding_mode != false && eventbuilding_mode != true){
+    Log("PhaseIIADCCalibrator: Event Building mode not recognized. Default to false",v_warning,verbosity);
+    eventbuilding_mode = false;
+  }
+
   //Set in CStore for tools to know and log this later 
   m_data->CStore.Set("ADCThreshold",default_adc_threshold);
 
@@ -68,10 +75,33 @@ bool PhaseIIADCHitFinder::Initialise(std::string config_filename, DataModel& dat
   hit_map = new std::map<unsigned long,std::vector<Hit>>;
   aux_hit_map = new std::map<unsigned long,std::vector<Hit>>;
 
+  m_data->CStore.Set("NewHitsData",false);
+
+  if (eventbuilding_mode){
+    InProgressHits = new std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*>;
+    InProgressHitsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*>;
+    InProgressRecoADCHits = new std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>>;
+    InProgressRecoADCHitsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>>;
+    InProgressChkey = new std::map<uint64_t, std::vector<unsigned long>>;
+    //FinishedHits = new std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*>;
+    //FinishedHitsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<Hit>>*>;
+    //FinishedRecoADCHits = new std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>>;
+    //FinishedRecoADCHitsAux = new std::map<uint64_t, std::map<unsigned long,std::vector<std::vector<ADCPulse>>>>;
+    m_data->CStore.Set("InProgressHits",InProgressHits);
+    m_data->CStore.Set("InProgressRecoADCHits",InProgressRecoADCHits);
+    m_data->CStore.Set("InProgressHitsAux",InProgressHitsAux);
+    m_data->CStore.Set("InProgressRecoADCHitsAux",InProgressRecoADCHitsAux);
+    m_data->CStore.Set("NewHitsData",true);
+  }
+
   return true;
 }
 
 bool PhaseIIADCHitFinder::Execute() {
+
+
+  //ANNIEEvent mode
+  if (!eventbuilding_mode){
   this->ClearMaps();
 
   try {
@@ -187,6 +217,190 @@ bool PhaseIIADCHitFinder::Execute() {
     Log("Error: " + std::string( except.what() ), 0, verbosity);
     return false;
   }
+  } else {
+
+    //EventBuilding mode (new)
+
+    bool new_calibrated = false;
+    m_data->CStore.Get("NewCalibratedData",new_calibrated);
+    std::cout <<"new_calibrated: "<<new_calibrated<<std::endl;
+    if (!new_calibrated) return true;		//Don't do anything if there was no new calibrated data from PhaseIIADCCalibrator tool
+
+    bool got_raw_data = false;
+    bool got_rawaux_data = false;
+    bool got_calib_data = false;
+    bool got_calibaux_data = false;
+
+
+    if (use_led_waveforms){
+      got_raw_data = m_data->CStore.Get("FinishedRawLEDData",FinishedRawWaveforms);
+    } else {
+      got_raw_data = m_data->CStore.Get("FinishedRawWaveforms",FinishedRawWaveforms);
+    }
+    got_rawaux_data = m_data->CStore.Get("FinishedRawWaveformsAux",FinishedRawWaveformsAux);
+    got_calib_data = m_data->CStore.Get("FinishedCalibratedWaveforms",FinishedCalibratedWaveforms);
+    got_calibaux_data = m_data->CStore.Get("FinishedCalibratedWaveformsAux",FinishedCalibratedWaveformsAux);
+    if (!got_raw_data) {Log("PhaseIIADCHitFinder tool: Did not find raw data in CStore!",v_error,verbosity); return false;}
+    if (!got_rawaux_data) {Log("PhaseIIADCHitFinder tool: Did not find raw aux data in CStore!",v_error,verbosity); return false;}
+    if (!got_calib_data) {Log("PhaseIIADCHitFinder tool: Did not find calibrated waveforms data in CStore!",v_error,verbosity); return false;}
+    if (!got_calibaux_data) {Log("PhaseIIADCHitFinder tool: Did not find calibrated aux waveforms data in CStore!",v_error,verbosity); return false;}
+
+    //std::cout <<"FinishedRawWaveforms size: "<<FinishedRawWaveforms->size()<<std::endl;
+
+
+    bool new_data = false;
+
+    std::vector<uint64_t> CalibratedTimestampsToDelete;
+
+    for(std::pair<uint64_t,std::map<unsigned long, std::vector<Waveform<unsigned short>>>> apair : *FinishedRawWaveforms){
+      uint64_t PMTCounterTime = apair.first;
+      
+      //Skip already processed events
+      //if (FinishedHits->count(PMTCounterTime) != 0) continue;
+      CalibratedTimestampsToDelete.push_back(PMTCounterTime);
+
+      new_data = true;
+
+      //std::cout <<"Sizes: "<<std::endl;
+      //std::cout <<"Hits: Timestamp: "<<PMTCounterTime<<", RawWaveform: "<<apair.second.size()<<std::endl;
+      //std::cout <<"RawWaveformAux: "<<FinishedRawWaveformsAux->size();
+      //std::cout <<"FinishedCalibratedWaveforms: "<<FinishedCalibratedWaveforms->size();
+      //std::cout <<"FinishedCalibratedWaveformsAux: "<<FinishedCalibratedWaveformsAux->size();
+      //Get all the maps
+      std::map<unsigned long, std::vector<Waveform<unsigned short>>> aRawWaveformMap = apair.second;
+      std::map<unsigned long, std::vector<Waveform<unsigned short>>> aRawWaveformMapAux;
+      std::map<unsigned long, std::vector<CalibratedADCWaveform<double>>> aCalibratedWaveformMap;
+      std::map<unsigned long, std::vector<CalibratedADCWaveform<double>>> aCalibratedWaveformMapAux;
+      bool get_single_rawaux = false;
+      //std::cout <<"Check if FinishedRawWaveFormsAux have timestamp "<<PMTCounterTime<<std::endl;
+      get_single_rawaux = (FinishedRawWaveformsAux->count(PMTCounterTime) > 0);
+      if (get_single_rawaux) aRawWaveformMapAux = FinishedRawWaveformsAux->at(PMTCounterTime);
+      else {Log("PhaseIIADCHitFinder tool: Did not find raw aux waveform entry for timestamp "+std::to_string(PMTCounterTime),v_error,verbosity); return false;}
+      bool get_single_calib = false;
+      get_single_calib = (FinishedCalibratedWaveforms->count(PMTCounterTime) > 0);
+      if (get_single_calib) aCalibratedWaveformMap = FinishedCalibratedWaveforms->at(PMTCounterTime);
+      else {Log("PhaseIIADCHitFinder tool: Did not find calibrated waveform entry for timestamp "+std::to_string(PMTCounterTime),v_error,verbosity); return false;}
+      bool get_single_calibaux = false;
+      get_single_calibaux = (FinishedCalibratedWaveformsAux->count(PMTCounterTime) > 0);
+      if (get_single_calibaux) aCalibratedWaveformMapAux = FinishedCalibratedWaveformsAux->at(PMTCounterTime);
+      else {Log("PhaseIIADCHitFinder tool: Did not find calibrated aux waveform entry for timestamp "+std::to_string(PMTCounterTime),v_error,verbosity); return false;}
+
+      this->ClearMaps();
+
+      try {
+        //Recreate maps that were deleted with ANNIEEvent->Delete() ANNIEEventBuilder tool
+        //hit_map = new std::map<unsigned long,std::vector<Hit>>;
+        //aux_hit_map = new std::map<unsigned long,std::vector<Hit>>;
+        if (InProgressHits->count(PMTCounterTime)>0) hit_map = InProgressHits->at(PMTCounterTime);
+	else hit_map = new std::map<unsigned long,std::vector<Hit>>;
+        if (InProgressHitsAux->count(PMTCounterTime)>0) aux_hit_map = InProgressHitsAux->at(PMTCounterTime);
+	else aux_hit_map = new std::map<unsigned long,std::vector<Hit>>;
+	if (InProgressRecoADCHits->count(PMTCounterTime)>0) pulse_map = InProgressRecoADCHits->at(PMTCounterTime);
+	if (InProgressRecoADCHitsAux->count(PMTCounterTime)>0) aux_pulse_map = InProgressRecoADCHitsAux->at(PMTCounterTime);
+        if (InProgressChkey->count(PMTCounterTime)>0) chkey_map = InProgressChkey->at(PMTCounterTime);
+
+        //std::cout <<"Looping through aRawWaveformMap"<<std::endl;
+        //Find pulses in the raw detector data
+        for (const auto& temp_pair : aRawWaveformMap) {
+          //std::cout <<"get entry"<<std::endl;
+          const auto& achannel_key = temp_pair.first;
+          const auto& araw_waveforms = temp_pair.second;
+          chkey_map.push_back(achannel_key);
+          //Don't make hit objects for any offline channels
+          Channel* thischannel = geom->GetChannel(achannel_key);
+          if(thischannel->GetStatus() == channelstatus::OFF) continue;
+          //std::cout <<"Get calibrated waveform map entry"<<std::endl;
+          std::vector<CalibratedADCWaveform<double> > acalibrated_waveforms = aCalibratedWaveformMap.at(achannel_key);
+          //std::cout <<"build_pulse_and_hit_map"<<std::endl;
+          bool MadeMaps = this->build_pulse_and_hit_map(achannel_key, araw_waveforms, acalibrated_waveforms, pulse_map,*hit_map);
+          //std::cout <<"chankey: "<<achannel_key<<"hit_map size: "<<hit_map->size()<<std::endl;
+          if(!MadeMaps){
+            Log("PhaseIIADCHitFinder Error: problem making PMT hit and pulse maps", 0, verbosity);
+            return false;
+          }
+        }
+
+	//std::cout <<"chkey_map size: "<<chkey_map.size()<<std::endl;
+	
+        Log("PhaseIIADCHitFinder Tool: setting PMT RecoADCHits in InProgress Events", v_debug, verbosity);
+        if (InProgressRecoADCHits->count(PMTCounterTime)==0) InProgressRecoADCHits->emplace(PMTCounterTime,pulse_map);
+	else InProgressRecoADCHits->at(PMTCounterTime)=pulse_map;
+      
+        Log("PhaseIIADCHitFinder Tool: setting PMT Hits in InProgress Events", v_debug, verbosity);
+        if (InProgressHits->count(PMTCounterTime)==0) InProgressHits->emplace(PMTCounterTime,hit_map);
+	else InProgressHits->at(PMTCounterTime)=hit_map;
+
+
+        Log("PhaseIIADCHitFinder Tool: Finding SiPM pulses in auxiliary channels", v_debug, verbosity);
+        //Find pulses in the raw auxiliary channel data
+        for (const auto& temp_pair : aRawWaveformMapAux) {
+          const auto& achannel_key = temp_pair.first;
+          if (AuxChannelNumToTypeMap->at(achannel_key) == "BRF" || AuxChannelNumToTypeMap->at(achannel_key) == "BoosterRWM") chkey_map.push_back(achannel_key);
+          if(AuxChannelNumToTypeMap->at(achannel_key) != "SiPM1" && AuxChannelNumToTypeMap->at(achannel_key) != "SiPM2") continue; 
+          const auto& araw_waveforms = temp_pair.second;
+          std::vector<CalibratedADCWaveform<double> > acalibrated_waveforms = aCalibratedWaveformMapAux.at(achannel_key);
+          bool MadeAuxMaps = this->build_pulse_and_hit_map(achannel_key, araw_waveforms, acalibrated_waveforms, aux_pulse_map,*aux_hit_map);
+          if(!MadeAuxMaps){
+            Log("PhaseIIADCHitFinder Error: problem making  Aux hit and pulse maps", 0, verbosity);
+            return false;
+          }
+        }
+
+	//Include the RWM and BRF waveforms in the InProgressChkey map
+        if (InProgressChkey->count(PMTCounterTime)==0) InProgressChkey->emplace(PMTCounterTime,chkey_map);
+	else InProgressChkey->at(PMTCounterTime)=chkey_map;
+	//std::cout <<"InProgressChkeyMap size after emplacing: "<<InProgressChkey->at(PMTCounterTime).size()<<std::endl;
+
+        Log("PhaseIIADCHitFinder Tool: setting RecoADCAuxHits in InProgress Events", v_debug, verbosity);
+        if (InProgressRecoADCHitsAux->count(PMTCounterTime)==0) InProgressRecoADCHitsAux->emplace(PMTCounterTime,aux_pulse_map);
+	else InProgressRecoADCHitsAux->at(PMTCounterTime)=aux_pulse_map;
+        
+        Log("PhaseIIADCHitFinder Tool: setting AuxHits in InProgress Events", v_debug, verbosity);
+        if (InProgressHitsAux->count(PMTCounterTime)==0) InProgressHitsAux->emplace(PMTCounterTime,aux_hit_map);
+	else InProgressHitsAux->at(PMTCounterTime)=aux_hit_map;
+	
+      }
+
+      catch (const std::exception& except) {
+        //std::cout <<"catch"<<std::endl;
+        Log("Error: " + std::string( except.what() ), 0, verbosity);
+        return false;
+      }
+    }
+    
+    for (int i_del=0; i_del < (int) CalibratedTimestampsToDelete.size(); i_del++){
+      FinishedRawWaveforms->erase(CalibratedTimestampsToDelete.at(i_del));
+      FinishedRawWaveformsAux->erase(CalibratedTimestampsToDelete.at(i_del));
+      FinishedCalibratedWaveforms->erase(CalibratedTimestampsToDelete.at(i_del));
+      FinishedCalibratedWaveformsAux->erase(CalibratedTimestampsToDelete.at(i_del));
+    }
+
+    //std::cout <<"InProgressHits loop: "<<std::endl;
+    //for (std::pair<uint64_t,std::map<unsigned long,std::vector<Hit>>*> apair : *InProgressHits){
+    //  std::cout<<"timestamp: "<<apair.first<<", hits size: "<<apair.second->size()<<", chkey size: "<<InProgressChkey->at(apair.first).size()<<std::endl;
+    //}
+
+   // std::cout <<"InProgressHits size (calibrator): "<<InProgressHits->size()<<std::endl;
+   // std::cout <<"InProgressRecoADCHits size (calibrator): "<<InProgressRecoADCHits->size()<<std::endl;
+   // std::cout <<"InProgressHitsAux size (calibrator): "<<InProgressHitsAux->size()<<std::endl;
+    if (new_data){
+      //std::cout <<"FinishedHits"<<std::endl;
+      //Setting variables into the CStore
+      m_data->CStore.Set("InProgressHits",InProgressHits);
+      //std::cout <<"FinishedRecoADCHits"<<std::endl;
+      m_data->CStore.Set("InProgressRecoADCHits",InProgressRecoADCHits);
+      m_data->CStore.Set("InProgressChkey",InProgressChkey);
+      //std::cout <<"FinishedHitsAux"<<std::endl;
+      m_data->CStore.Set("InProgressHitsAux",InProgressHitsAux);
+     // std::cout <<"FinishedRecoADCHitsAux"<<std::endl;
+      m_data->CStore.Set("InProgressRecoADCHitsAux",InProgressRecoADCHitsAux);
+
+      m_data->CStore.Set("NewHitsData",true);
+    }
+  }
+
+  return true;
+
 }
 
 
@@ -292,6 +506,8 @@ bool PhaseIIADCHitFinder::build_pulse_and_hit_map(
   std::map<unsigned long,std::vector<Hit>>& hmap)
 {
 
+
+  //std::cout <<"Check size of raw_waveforms"<<std::endl;
   // Ensure that the number of minibuffers is the same between the
   // sets of raw and calibrated waveforms for the current channel
   if ( raw_waveforms.size() != calibrated_waveforms.size() ) {
@@ -301,11 +517,14 @@ bool PhaseIIADCHitFinder::build_pulse_and_hit_map(
     return false;
   }
 
+  //std::cout <<"Define vectors"<<std::endl;
   //Initialize objects that final pulse information is loaded into
   std::vector< std::vector<ADCPulse> > pulse_vec;
   std::vector<Hit> HitsOnPMT;
 
+  //std::cout <<"Get num minibuffers"<<std::endl;
   size_t num_minibuffers = raw_waveforms.size();
+  //std::cout <<"Choose pulse finding approach"<<std::endl;
   if (pulse_finding_approach == "full_window"){
 
     // Integrate each whole dang minibuffer and background subtract 
@@ -344,12 +563,17 @@ bool PhaseIIADCHitFinder::build_pulse_and_hit_map(
   }
 
   else if (pulse_finding_approach == "threshold"){
-    // Determine the ADC threshold to use for the current channel
+   
+    //std::cout <<"THRESHOLD approach"<<std::endl; 
+   // Determine the ADC threshold to use for the current channel
     unsigned short thispmt_adc_threshold = BOGUS_INT;
+    //std::cout <<"get db threshold"<<std::endl;
     thispmt_adc_threshold = this->get_db_threshold(channel_key);
 
+   // std::cout <<"go through minibuffers"<<std::endl;
     //For each minibuffer, adjust threshold for baseline calibration and find pulses
     for (size_t mb = 0; mb < num_minibuffers; ++mb) {
+      //std::cout <<mb<<"/"<<num_minibuffers<<std::endl;
       if (threshold_type == "relative") {
         thispmt_adc_threshold = thispmt_adc_threshold
           + std::round( calibrated_waveforms.at(mb).GetBaseline() );
@@ -370,16 +594,21 @@ bool PhaseIIADCHitFinder::build_pulse_and_hit_map(
         0, verbosity);
   }
 
+ // std::cout <<"Fill pulse map"<<std::endl;
   //Fill pulse map with all ADCPulses found
   Log("PhaseIIADCHitFinder: Filling pulse map.",
       v_debug, verbosity);
   if(verbosity > v_debug) std::cout << "Number of pulses in pulse_vec's first entry: " << pulse_vec.at(0).size() << std::endl;
-  pmap.emplace(channel_key,pulse_vec);
+  for (int j=0; j< (int) pulse_vec.size(); j++){
+    std::vector<ADCPulse> apulsevec = pulse_vec.at(j);
+    if (pmap.count(channel_key) == 0) pmap.emplace(channel_key,pulse_vec);
+    else pmap.at(channel_key).push_back(apulsevec);
+  }
   //Convert ADCPulses to Hits and fill into Hit map
   HitsOnPMT = this->convert_adcpulses_to_hits(channel_key,pulse_vec);
   Log("PhaseIIADCHitFinder: Filling hit map.",
       v_debug, verbosity);
-  for(int j=0; j < HitsOnPMT.size(); j++){
+  for(int j=0; j < (int) HitsOnPMT.size(); j++){
     Hit ahit = HitsOnPMT.at(j);
     if(hmap.count(channel_key)==0) hmap.emplace(channel_key, std::vector<Hit>{ahit});
     else hmap.at(channel_key).push_back(ahit);
@@ -397,6 +626,7 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bywindow(
   if ( raw_minibuffer_data.Samples().size()
     != calibrated_minibuffer_data.Samples().size() )
   {
+    std::cout <<"Raw minibuffer size: "<<raw_minibuffer_data.Samples().size()<<", calibrated size: "<<calibrated_minibuffer_data.Samples().size()<<std::endl;
     throw std::runtime_error("Size mismatch between the raw and calibrated"
       " waveforms encountered in PhaseIIADCHitFinder::find_pulses_bywindow()");
   }
@@ -495,6 +725,7 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bythreshold(
   if ( raw_minibuffer_data.Samples().size()
     != calibrated_minibuffer_data.Samples().size() )
   {
+    std::cout <<"PhaseIIADCHitFinder size mismatch raw/calibrated: Raw minibuffer data size: "<<raw_minibuffer_data.Samples().size()<<", calibrated samples size: "<<calibrated_minibuffer_data.Samples().size()<<std::endl;
     throw std::runtime_error("Size mismatch between the raw and calibrated"
       " waveforms encountered in PhaseIIADCHitFinder::find_pulses_bythreshold()");
   }
@@ -511,7 +742,9 @@ std::vector<ADCPulse> PhaseIIADCHitFinder::find_pulses_bythreshold(
       + calibrated_minibuffer_data.GetSigmaBaseline() ));
 
   bool in_pulse = false;
-  size_t num_samples = raw_minibuffer_data.Samples().size()-50;
+  //size_t num_samples = raw_minibuffer_data.Samples().size()-50;  //-50 was the old method to get rid of the large pulses we were seeing
+  //Since those should not be an issue anymore (the bug has been found), we can simply use all samples now
+  size_t num_samples = raw_minibuffer_data.Samples().size();
 
   //Fixed integration window defined relative to ADC threshold crossings
   if(pulse_window_type == "fixed"){
@@ -672,6 +905,7 @@ std::vector<Hit> PhaseIIADCHitFinder::convert_adcpulses_to_hits(unsigned long ch
 void PhaseIIADCHitFinder::ClearMaps(){
   if(!pulse_map.empty()) pulse_map.clear();
   if(!aux_pulse_map.empty()) aux_pulse_map.clear();
+  if(!chkey_map.empty()) chkey_map.clear();
   //if(!hit_map->empty()) hit_map->clear();
   //if(!aux_hit_map->empty()) aux_hit_map->clear();
 }   

@@ -205,6 +205,8 @@ void IFBeamDBInterface::PostprocessParsedResponse(std::map<std::string,
         pair.second.value = value;
         pair.second.unit = "POT";
       }
+    } else {
+      std::cout <<"IFBeamDBInterface: Did not find device name : "<<device<<std::endl;
     }
   }
 }

@@ -1,0 +1,5 @@
+# PrintANNIEEvent config file
+
+verbose 3
+
+HasRaw 0	#Does file contain raw data objects?

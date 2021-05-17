@@ -1,0 +1,17 @@
+# BeamDecoder config file
+verbosity 0
+# Names of devices needed for beam quality cuts
+HornCurrentDevice E:THCURR
+# The "first" toroid is the one farther upstream from the target
+FirstToroid E:TOR860
+SecondToroid E:TOR875
+# POT window
+CutPOTMin 5e11
+CutPOTMax 8e12
+# Peak horn current window (in kA)
+CutPeakHornCurrentMin 172
+CutPeakHornCurrentMax 176
+# Toroid agreement tolerance (fractional error)
+CutToroidAgreement 0.05
+# DB vs DAQ timestamp agreement tolerance (ms)
+CutTimestampAgreement 100

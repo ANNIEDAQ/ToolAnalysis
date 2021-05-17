@@ -1,0 +1,7 @@
+verbosity 5
+BuildType MRDAndCTC
+Mode FileList
+InputFile ./configfiles/DataDecoderMRDCTC/my_files.txt
+DummyRunInfo 1
+StoreTrigOverlap 0
+ReadTrigOverlap 1

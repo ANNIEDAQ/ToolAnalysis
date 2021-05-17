@@ -1,0 +1,13 @@
+# BeamFetcher config file
+verbose 5
+OutputFile ./2369_beamdb
+TimestampMode DB 	#Options: MSEC / LOCALDATE / DB
+DaylightSavings 0
+RunNumber 2280
+StartDate ./configfiles/BeamFetcher/my_start_date.txt
+EndDate ./configfiles/BeamFetcher/my_end_date.txt
+#StartMillisecondsSinceEpoch 1498246528696
+#EndMillisecondsSinceEpoch 1498842458085
+#StartMillisecondsSinceEpoch 1491132659000 # 6:30:49 AM 2 April 2017 (FNAL time)
+#EndMillisecondsSinceEpoch   1491164001000 # 3:13:21 PM 2 April 2017 (FNAL time)
+TimeChunkStepInMilliseconds       7200000 # two hours

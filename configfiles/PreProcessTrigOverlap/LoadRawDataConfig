@@ -1,0 +1,7 @@
+verbosity 11
+BuildType CTC
+Mode FileList
+InputFile ./configfiles/PreProcessTrigOverlap/my_files.txt
+DummyRunInfo 1
+StoreTrigOverlap 1
+ReadTrigOverlap 0

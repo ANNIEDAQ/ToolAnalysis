@@ -44,7 +44,7 @@ class MonitorTrigger: public Tool {
   //Configuration and initialization functions
   void ReadInConfiguration();
   void InitializeHists();
-  void LoopThroughDecodedEvents(std::map<uint64_t,uint32_t> timetotriggerword);
+  void LoopThroughDecodedEvents(std::map<uint64_t,std::vector<uint32_t>> timetotriggerword);
   void WriteToFile();
   void ReadFromFile(ULong64_t timestamp_end, double time_frame);
   void DrawLastFilePlots();
@@ -89,7 +89,7 @@ class MonitorTrigger: public Tool {
   std::vector<ULong64_t> config_endtime_long;
 
   //Decoded data variable
-  std::map<uint64_t,uint32_t> TimeToTriggerWordMap;
+  std::map<uint64_t,std::vector<uint32_t>> TimeToTriggerWordMap;
   std::vector<int> TriggerMask;
   std::map<int,std::string> TriggerWord;
   std::vector<std::vector<int>> TriggerAlign;

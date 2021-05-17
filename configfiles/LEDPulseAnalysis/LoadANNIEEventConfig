@@ -1,2 +1,2 @@
 verbose 2
-FileForListOfInputs /ToolAnalysis/configfiles/LEDPulseAnalysis/my_inputs.txt
+FileForListOfInputs ./configfiles/LEDPulseAnalysis/my_inputs.txt

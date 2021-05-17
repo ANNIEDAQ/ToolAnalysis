@@ -1,0 +1,17 @@
+verbosity 5
+
+BuildType TankAndCTC
+ProcessedFilesBasename ProcessedRawData
+NumEventsPerPairing 200
+SavePath ./
+
+MinNumWavesInSet 134 // 1=Just throw any waveforms into ANNIE events if you got em
+
+ExecutesPerBuild 10
+OrphanOldTankTimestamps 1
+OldTimestampThreshold 300
+OrphanFileBase OrphanStore
+MaxStreamMatchingTimeSeparation 60 // seconds. If one stream is ahead of the others, pause reading
+
+SaveRawData 0
+StoreBeamStatus 1

@@ -1,0 +1,2 @@
+myLoadRunInfo LoadRunInfo configfiles/BeamFetcher/LoadRunInfoConfig
+myBeamFetcher BeamFetcher configfiles/BeamFetcher/BeamFetcherConfig

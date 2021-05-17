@@ -3,3 +3,5 @@ BuildType MRD
 Mode FileList
 InputFile ./configfiles/DataDecoderMRD/my_files.txt
 DummyRunInfo 1
+StoreTrigOverlap 0
+ReadTrigOverlap 0

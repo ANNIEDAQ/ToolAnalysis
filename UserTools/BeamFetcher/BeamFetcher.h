@@ -9,6 +9,10 @@
 #include <iostream>
 #include <string>
 
+// Boost includes
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 // ToolAnalysis includes
 #include "Tool.h"
 
@@ -39,4 +43,20 @@ class BeamFetcher: public Tool {
     /// @brief Name of the output file in which the beam database information
     /// will be saved
     std::string db_filename_;
+
+    std::string start_date;
+    std::string end_date;
+    std::string start_timestamp;
+    std::string end_timestamp;
+    boost::posix_time::ptime current;
+    std::string timestamp_mode;
+    uint64_t start_ms_since_epoch;
+    uint64_t end_ms_since_epoch;
+    void ConvertDateToMSec(std::string start_str,std::string end_str,uint64_t &start_ms,uint64_t &end_ms);
+    uint64_t TimeZoneShift;
+    bool DaylightSavings;
+    std::map<int,std::map<std::string,std::string>> RunInfoDB;
+    int RunNumber;
+
+
 };

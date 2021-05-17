@@ -1,0 +1,15 @@
+# PhaseIIADCCalibrator config file
+
+verbosity 0
+
+BaselineEstimationType ze3ra_multi
+NumBaselineSamples 15
+NumSubWaveforms 10
+
+SamplesPerBaselineEstimate 2000
+BaselineUncertaintyTolerance 2
+PCritical 0.01
+MakeCalLEDWaveforms 0
+
+EventBuilding 1
+ExecutesPerBuild 10

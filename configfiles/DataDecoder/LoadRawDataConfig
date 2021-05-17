@@ -1,5 +1,9 @@
-verbosity 5
+verbosity 11
 BuildType TankAndMRDAndCTC
+#BuildType CTC
 Mode FileList
 InputFile ./configfiles/DataDecoder/my_files.txt
 DummyRunInfo 1
+StoreTrigOverlap 0
+ReadTrigOverlap 1
+StoreRawData 0

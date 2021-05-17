@@ -64,6 +64,7 @@ class LoadGeometry: public Tool {
   std::map<std::vector<int>,int>* TankPMTCrateSpaceToChannelNumMap;
   std::map<std::vector<int>,int>* AuxCrateSpaceToChannelNumMap;
   std::map<int,std::vector<int>>* ChannelNumToTankPMTCrateSpaceMap;
+  std::map<int,std::vector<int>>* AuxChannelNumToCrateSpaceMap;
   std::map<int,double>* ChannelNumToTankPMTSPEChargeMap;
   std::map<int,std::string>* AuxChannelNumToTypeMap;
   std::map<std::vector<unsigned int>,int>* LAPPDCrateSpaceToChannelNumMap;

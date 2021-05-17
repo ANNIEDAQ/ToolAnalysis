@@ -21,6 +21,6 @@ service_kick_sec -1
 Tools_File configfiles/DataSummary/ToolsConfig  ## list of tools to run and their config files
 
 ##### Run Type #####
-Inline 1 ## number of Execute steps in program, -1 infinite loop that is ended by user 
+Inline -1 ## number of Execute steps in program, -1 infinite loop that is ended by user 
 Interactive 0 ## set to 1 if you want to run the code interactively
 

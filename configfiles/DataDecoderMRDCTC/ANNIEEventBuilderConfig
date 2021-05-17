@@ -1,0 +1,16 @@
+verbosity 2
+
+BuildType MRDAndCTC
+ProcessedFilesBasename ProcessedRawData
+SavePath ./
+NumEventsPerPairing 200
+
+ExecutesPerBuild 10
+OrphanOldTankTimestamps 1
+OldTimestampThreshold 300
+OrphanFileBase OrphanStore
+MaxStreamMatchingTimeSeparation 60 // seconds. If one stream is ahead of the others, pause reading
+
+SaveRawData 0
+StoreBeamStatus 1
+

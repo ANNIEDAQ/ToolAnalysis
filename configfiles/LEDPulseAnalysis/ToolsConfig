@@ -1,5 +1,5 @@
 LoadANNIEEvent LoadANNIEEvent ./configfiles/LEDPulseAnalysis/LoadANNIEEventConfig
-LoadGeometry LoadGeometry ./configfiles/LEDPulseAnalysis/LoadGeometryConfig
+LoadGeometry LoadGeometry ./configfiles/LoadGeometry/LoadGeometryConfig
 PhaseIIADCCalibrator PhaseIIADCCalibrator ./configfiles/LEDPulseAnalysis/PhaseIIADCCalibratorConfig
 PhaseIIADCHitFinder PhaseIIADCHitFinder ./configfiles/LEDPulseAnalysis/PhaseIIADCHitFinderConfig
 PrintADCData PrintADCData ./configfiles/LEDPulseAnalysis/PrintADCDataConfig

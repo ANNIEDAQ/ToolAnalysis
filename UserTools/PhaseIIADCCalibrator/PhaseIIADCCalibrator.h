@@ -32,6 +32,7 @@ class PhaseIIADCCalibrator : public Tool {
     bool Initialise(const std::string configfile,DataModel& data) override;
     bool Execute() override;
     bool Finalise() override;
+    void CardIDToElectronicsSpace(int CardID, int &CrateNum, int &SlotNum);
 
   protected:
 
@@ -98,7 +99,25 @@ class PhaseIIADCCalibrator : public Tool {
     int baseline_fit_order;
     bool redo_fit_without_outliers;
     double refit_threshold; // V range of the initial baseline subtracted waveform must be > this to trigger refit
-    
+ 
+    //Variables specifically intended for Event Building
+    bool eventbuilding_mode = false;
+    //std::map<uint64_t, std::map<std::vector<int>, std::vector<uint16_t> > > *FinishedTankEvents;  //Key: {MTCTime}, value: map of fully-built waveforms from WaveBank
+    std::map<uint64_t, std::map<std::vector<int>, std::vector<uint16_t> > > *InProgressTankEvents;  //Key: {MTCTime}, value: map of fully-built waveforms from WaveBank
+    std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>> *FinishedRawWaveforms;	//Key: {MTCTime}, value: map of raw waveforms
+    std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>> *FinishedRawWaveformsAux;  //Key: {MTCTime}, value: map of raw waveforms (aux channels)
+    std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>> *FinishedCalibratedWaveforms;	//Key: {MTCTime}, value: map of calibrated waveforms
+    std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>> *FinishedCalibratedWaveformsAux;  //Key: {MTCTime}, value: map of calibrated waveforms (aux channels)
+    std::map<uint64_t, std::map<unsigned long,std::vector<CalibratedADCWaveform<double>>>> *FinishedCalibratedLEDADCData;  //Key: {MTCTime}, value: map of calibrated waveforms (LED channels)
+    std::map<uint64_t, std::map<unsigned long,std::vector<Waveform<unsigned short>>>> *FinishedRawLEDADCData;	//Key: {MTCTime}, value: map of raw LED waveforms
+    std::map<uint64_t, std::map<unsigned long,std::vector<int>>> *FinishedRawAcqSize;   // Key: {MTCTime}, value: map 
+
+    std::map<std::vector<int>,int> TankPMTCrateSpaceToChannelNumMap;
+    std::map<std::vector<int>,int> AuxCrateSpaceToChannelNumMap;
+
+    int ExecuteCount;
+    int ExecutesPerBuild;
+
     // ROOT stuff for drawing the fit of the baseline
     bool draw_baseline_fit=false;
     TApplication* rootTApp=nullptr;

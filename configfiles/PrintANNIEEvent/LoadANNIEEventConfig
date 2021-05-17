@@ -1,0 +1,4 @@
+verbose 4
+EventOffset 0
+FileForListOfInputs ./configfiles/PrintANNIEEvent/my_inputs.txt
+GlobalEvNr 1	# If multiple files are present, introduce a global event number across files?

@@ -35,10 +35,14 @@ class TriggerDataDecoder: public Tool {
 
   //std::vector<TriggerData> *Tdata = nullptr;
   TriggerData *Tdata = nullptr;
-  std::map<uint64_t,uint32_t>* TimeToTriggerWordMap;
+  std::map<uint64_t,std::vector<uint32_t>>* TimeToTriggerWordMap;
+  std::map<uint64_t,std::vector<uint32_t>>* TimeToTriggerWordMapComplete;	//Info about all triggerwords
   bool UseTrigMask = false;
   std::string TriggerWordFile;
   std::string mode;
+  bool storetrigoverlap;
+  bool readtrigoverlap;
+  int loop_nr;
 
   std::string TriggerMaskFile;
   std::vector<int> TriggerMask;
@@ -55,6 +59,9 @@ class TriggerDataDecoder: public Tool {
   uint64_t c2 = 0;
   int CurrentRunNum;
   int CurrentSubrunNum;
+  int CurrentPartNum;
+  
+  bool usecstore;
 
   int verbosity;
   int v_error=0;

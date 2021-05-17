@@ -30,9 +30,18 @@ class LoadANNIEEvent: public Tool {
     /// the output
     int verbosity_;
 
+    /// @brief FileFormat of input file (combined ANNIEEvent+OrphanStore or separate stores)
+    std::string FileFormat;
+
+    /// @brief Boolean whether OrphanStore should be accessed
+    bool load_orphan_store;
+
     /// @brief Vector of filenames for each of the input files
     std::vector<std::string> input_filenames_;
 
+    /// @brief Vector of filenames for each of the orphan input files
+    std::vector<std::string> input_filenames_orphan_;
+    
     /// @brief The index of the current entry in the ANNIEEvent store
     size_t current_entry_;
 
@@ -45,8 +54,13 @@ class LoadANNIEEvent: public Tool {
     /// @brief The total number of ANNIEEvent entries in the current file
     size_t total_entries_in_file_;
 
+    /// @brief The total number of OrphanStore entries in the current file
+    size_t total_orphans_in_file_;
+
     /// @brief Flag indicating whether we need to load a new file
     bool need_new_file_;
+
+    bool load_orphanstore;
 
     std::stringstream logmessage;
 };

@@ -14,6 +14,8 @@
 #include "TriggerClass.h"
 #include "TimeClass.h"
 #include "BeamStatus.h"
+#include "BeamStatusClass.h"
+#include "ADCPulse.h"
 
 class PrintANNIEEvent: public Tool {
 	
@@ -30,29 +32,60 @@ class PrintANNIEEvent: public Tool {
 	int get_ok;
 	std::string inputfile;
 	unsigned long NumEvents;
-	
+	bool is_mc;	
+	bool has_raw;
+	bool first_event;
+
 	// contents of ANNIEEvent
 	uint32_t RunNumber;
 	uint32_t SubrunNumber;
 	uint32_t EventNumber;
+
+	//MC variables
+	BeamStatusClass* BeamStatusMC = nullptr;
 	std::vector<MCParticle>* MCParticles=nullptr;
 	std::vector<Particle>* RecoParticles=nullptr;
-	std::map<unsigned long,std::vector<Hit>>* MCHits=nullptr;
-	std::map<unsigned long,std::vector<LAPPDHit>>* MCLAPPDHits=nullptr;
-	std::map<unsigned long,std::vector<Hit>>* TDCData=nullptr;
-	std::map<unsigned long,std::vector<Waveform<uint16_t>>>* RawADCData=nullptr;
-	std::map<unsigned long,std::vector<Waveform<uint16_t>>>* RawLAPPDData=nullptr;
-	std::map<unsigned long,std::vector<Waveform<double>>>* CalibratedADCData=nullptr;
-	std::map<unsigned long,std::vector<Waveform<double>>>* CalibratedLAPPDData=nullptr;
-	std::vector<TriggerClass>* TriggerData=nullptr;
+        std::map<unsigned long,std::vector<MCHit>>* MCHits=nullptr;
+	std::map<unsigned long,std::vector<MCLAPPDHit>>* MCLAPPDHits=nullptr;
+	std::map<unsigned long,std::vector<MCHit>>* MCTDCData=nullptr;
 	bool MCFlag;
 	TimeClass* EventTime=nullptr;
 	uint64_t MCEventNum;
 	uint16_t MCTriggernum;
 	std::string MCFile;
-	BeamStatusClass* BeamStatus=nullptr;
+	std::vector<TriggerClass>* TriggerData = nullptr;
 	
+	//Data variables
+	std::string MRDTriggertype;
+	std::map<std::string,int> MRDLoopbackTDC;
+	uint64_t EventTimeMRD;
+	uint64_t EventTimeTank;
+	uint64_t CTCTimestamp;
+	uint32_t TriggerWord;
+	std::map<std::string, bool> DataStreams;
+	BeamStatus BeamStatusData;
+	int PartNumber;
+	int TriggerExtended;
+	TriggerClass TriggerDataData;
+	std::map<unsigned long,std::vector<Hit>>* Hits=nullptr;
+	std::map<unsigned long,std::vector<Hit>>* AuxHits=nullptr;
+	std::map<unsigned long,std::vector<LAPPDHit>>* LAPPDHits=nullptr;
+	std::map<unsigned long,std::vector<Hit>>* TDCData=nullptr;
+	std::map<unsigned long,std::vector<Waveform<uint16_t>>> RawADCData;
+	std::map<unsigned long,std::vector<Waveform<uint16_t>>> RawAuxADCData;
+	std::map<unsigned long,std::vector<Waveform<uint16_t>>> RawLAPPDData;
+	std::map<unsigned long,std::vector<Waveform<double>>> CalibratedADCData;
+	std::map<unsigned long,std::vector<Waveform<double>>> CalibratedLAPPDData;
+	std::map<unsigned long,std::vector<std::vector<ADCPulse>>> RecoADCData;
+	std::map<unsigned long,std::vector<std::vector<ADCPulse>>> RecoAuxADCData;
+	std::map<unsigned long,std::vector<int>> RawAcqSize;
+
 	std::stringstream logmessage;
+
+	int n_prompt;
+	int n_ext;
+	int n_ext_cc;
+	int n_ext_nc;
 };
 
 #endif

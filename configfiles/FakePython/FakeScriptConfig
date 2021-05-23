@@ -1,0 +1,5 @@
+# This config file stores variables that may be retrieved by the python script
+# Access them by retrieving the corresponding variable from the 'Config' store
+# dummy variable
+Five 5
+

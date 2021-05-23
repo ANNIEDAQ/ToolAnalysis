@@ -1,0 +1,3 @@
+# for simplicity make two instantiations of the same tool. I don't believe it makes a difference.
+myFakeScript PythonScript configfiles/FakePython/FakeScriptCallerConfig
+myFakeScript2 PythonScript configfiles/FakePython/FakeScriptCallerConfig

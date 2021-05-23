@@ -30,6 +30,8 @@ class PythonScript: public Tool {
   PyObject *pArgs, *pValue;
   PyThreadState* pythread;
 
+  Store thisscriptsconfigstore;
+
   int pyinit;
 
 };

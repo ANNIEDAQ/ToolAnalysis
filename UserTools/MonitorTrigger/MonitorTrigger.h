@@ -79,6 +79,7 @@ class MonitorTrigger: public Tool {
   std::string triggeralignfile="none";
   bool force_update;
   bool draw_marker;
+  bool draw_single;
   int verbosity;
 
   //Configuration option for plots
@@ -158,6 +159,7 @@ class MonitorTrigger: public Tool {
   TCanvas *canvas_timestamp = nullptr;
   TCanvas *canvas_triggeralign = nullptr;
   TCanvas *canvas_timeevolution = nullptr;
+  TCanvas *canvas_timeevolution_single = nullptr;
 
   //Histograms showing history (log) of files
   TH1F *log_files_trig = nullptr;

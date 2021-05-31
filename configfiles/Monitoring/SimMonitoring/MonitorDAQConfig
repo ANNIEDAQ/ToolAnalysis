@@ -1,16 +1,15 @@
-# TriggerMonitoring config file
+# DAQMonitoring config file
 
 verbose 5
 #OutputPath ./monitoringplots/
 OutputPath fromStore
 StartTime 1970/1/1 #start time for the conversion of timestamps into dates
-PlotConfiguration configfiles/Monitoring/TriggerTimePlotConfig.txt #file containing instructions what to plot
+PlotConfiguration configfiles/Monitoring/DAQTimePlotConfig.txt #file containing instructions what to plot
 PathMonitoring ./monitoringfiles/	#path at which the monitoring plots are going to be saved
+PathCompStats /DAQ
 ImageFormat png	#format in which monitoring plots are saved. Options: png, jpg, jpeg
-UpdateFrequency 0. #specify frequency for the file history plot, in mins
+UpdateFrequency 1. #specify frequency for the file history plot, in mins
 ForceUpdate 0	#force monitor plots to be produced even if there was no new data file available
 DrawMarker 0	#specify whether to use markers for the time evolution graphs or not
-DrawSingle 0    #Specify whether single triggerword plots should be created
-TriggerMaskFile ./configfiles/Monitoring/MonitoringTriggerMask.txt
-TriggerWordFile ./configfiles/Monitoring/TriggerWords.txt
-TriggerAlignFile ./configfiles/Monitoring/TriggerAlign.txt
+UseOnline 0	#Should the VME services be obtained online? Only possible in network
+TestMode 0	#Test mode to check functionality of warnings

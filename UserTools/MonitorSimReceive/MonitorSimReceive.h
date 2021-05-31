@@ -9,6 +9,15 @@
 #include "MRDOut.h"
 #include "Tool.h"
 
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/chrono.hpp>
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+#include <boost/filesystem.hpp>           // Get file sizes
+
+
 class MonitorSimReceive: public Tool {
 
 

@@ -172,6 +172,7 @@ class MonitorMRDTime: public Tool {
   std::vector<std::vector<int>> tdc_file;
   std::vector<std::vector<ULong64_t>> timestamp_file;
   std::vector<std::vector<int>> tdc_file_times;
+  std::vector<std::vector<int>> tdc_file_ch;
   ULong64_t t_file_start, t_file_end;
   ULong64_t utc_to_t=21600000;	//6h clock delay (MRD timestamped in UTC time)
   long n_doublehits;
@@ -235,7 +236,15 @@ class MonitorMRDTime: public Tool {
   TH1F *hist_tdc = nullptr;
   TH1F *hist_tdc_cluster = nullptr;
   TH1F *hist_tdc_cluster_20 = nullptr;
+  TH1F *hist_tdc_beam = nullptr;
+  TH1F *hist_tdc_cluster_beam = nullptr;
+  TH1F *hist_tdc_cluster_beam_20 = nullptr;
+  TH1F *hist_tdc_cosmic = nullptr;
+  TH1F *hist_tdc_cluster_cosmic = nullptr;
+  TH1F *hist_tdc_cluster_cosmic_20 = nullptr;
   std::vector<std::vector<int>> overall_mrd_coinc_times;
+  std::vector<std::vector<int>> overall_mrd_coinc_times_beam;
+  std::vector<std::vector<int>> overall_mrd_coinc_times_cosmic;
 
   //define rate histograms
   TH2F *rate_crate1=nullptr;

@@ -14,9 +14,13 @@ log_service LogStore
 
 
 ###### Service discovery ##### Ignore these settings for local analysis
-service_publish_sec -1
-service_kick_sec -1
-
+#service_publish_sec -1
+#service_kick_sec -1
+service_discovery_address 239.192.1.1
+service_discovery_port 5000
+service_name Monitoring
+service_publish_sec 5
+service_kick_sec 60
 
 ##### Tools To Add #####
 Tools_File configfiles/Monitoring/SimMonitoring/ToolsConfig  ## list of tools to run and their config files

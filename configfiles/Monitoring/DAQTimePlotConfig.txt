@@ -1,0 +1,6 @@
+###
+###	TIME_FRAME (hours)	T_END ("TEND_LASTFILE" / "YYYY/MM/DD-HH:MM:SS")	PLOTS_LABEL	PLOTTYPE_1	PLOTTYPE_2	PLOTTYPE_3	PLOTTYPE_4 	(etc, arbitrary number of plot types may be specified)
+###	Options for PLOTTYPEs are "TriggerRatePlots", "FileHistory"
+###
+24.	TEND_LASTFILE	lastDay	DAQTimeEvolution
+#100.	20200207T060000	Feb03_Feb07	TriggerRatePlots	TimeEvolution	FileHistory

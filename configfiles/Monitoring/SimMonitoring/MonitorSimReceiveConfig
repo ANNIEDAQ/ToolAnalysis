@@ -1,4 +1,4 @@
-FileList ./configfiles/Monitoring/SimMonitoring/Beamfiles.txt
+FileList ./configfiles/Monitoring/SimMonitoring/Beamfiles_lx02.txt
 OutPath ./monitoringplots/
 Mode FileList	#Options: FileList, Single, Wait
-verbose 3
+verbose 5

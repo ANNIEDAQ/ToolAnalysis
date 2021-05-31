@@ -20,6 +20,8 @@ bool MonitorTrigger::Initialise(std::string configfile, DataModel &data){
   //std::cout <<"List of Objects (Beginning of Initialise): "<<std::endl;
   //gObjectTable->Print();
 
+  draw_single = 0;
+
   //-------------------------------------------------------
   //-----------------Get Configuration---------------------
   //-------------------------------------------------------
@@ -32,6 +34,7 @@ bool MonitorTrigger::Initialise(std::string configfile, DataModel &data){
   m_variables.Get("ImageFormat",img_extension);
   m_variables.Get("ForceUpdate",force_update);
   m_variables.Get("DrawMarker",draw_marker);
+  m_variables.Get("DrawSingle",draw_single);
   m_variables.Get("TriggerMaskFile",triggermaskfile);
   m_variables.Get("TriggerWordFile",triggerwordfile);
   m_variables.Get("TriggerAlignFile",triggeralignfile);
@@ -62,7 +65,10 @@ bool MonitorTrigger::Initialise(std::string configfile, DataModel &data){
   if (triggeralignfile != "none"){
     TriggerAlign = this->LoadTriggerAlign(triggeralignfile);
   }
-  
+  if (draw_single !=0 && draw_single !=1){
+    draw_single = 0;
+  } 
+ 
   num_triggerwords_selected = TriggerMask.size();
 
   //-------------------------------------------------------
@@ -210,6 +216,8 @@ bool MonitorTrigger::Finalise(){
   delete canvas_file_timestamp_trig;
   delete canvas_timestamp;
   delete canvas_triggeralign;
+  delete canvas_timeevolution;
+  delete canvas_timeevolution_single;
 
   return true;
 }
@@ -354,6 +362,7 @@ void MonitorTrigger::InitializeHists(){
   canvas_file_timestamp_trig = new TCanvas("canvas_file_timestamp_trig","Timestamp Last Trig File",900,600);
   canvas_timestamp = new TCanvas("canvas_timestamp","Timestamps",900,600);
   canvas_timeevolution = new TCanvas("canvas_timeevolution","Time Evolution",900,600);
+  canvas_timeevolution_single = new TCanvas("canvas_timeevolution_single","Time Evolution Single",900,600);
   canvas_triggeralign = new TCanvas("canvas_triggeralign","Triggerword time alignment",900,600);
 
   for (int i_trig=0; i_trig < num_triggerwords; i_trig++){
@@ -1000,6 +1009,23 @@ void MonitorTrigger::DrawTimeEvolution(ULong64_t timestamp_end, double time_fram
       if (gr_rate.at(i_trig)->GetMaximum() > max_canvas) max_canvas = gr_rate.at(i_trig)->GetMaximum();
       if (gr_rate.at(i_trig)->GetMinimum() < min_canvas) min_canvas = gr_rate.at(i_trig)->GetMinimum();
       leg_rate->AddEntry(gr_rate.at(i_trig),ss_leg_time.str().c_str(),"l");
+    }
+
+    if (draw_single){
+    
+      canvas_timeevolution_single->cd();
+      canvas_timeevolution_single->Clear();
+      gr_rate.at(i_trig)->GetYaxis()->SetTitle("Rate [Hz]");
+      gr_rate.at(i_trig)->GetXaxis()->SetTimeDisplay(1);
+      gr_rate.at(i_trig)->GetXaxis()->SetLabelSize(0.03);
+      gr_rate.at(i_trig)->GetXaxis()->SetLabelOffset(0.03);
+      gr_rate.at(i_trig)->GetXaxis()->SetTimeFormat("#splitline{%m/%d}{%H:%M}");
+      gr_rate.at(i_trig)->GetXaxis()->SetTimeOffset(0.);
+      gr_rate.at(i_trig)->Draw("apl");
+      std::stringstream ss_trig_single;
+      ss_trig_single<<outpath<<"TrigTimeEvolution_Rate_Single_Trigword"<<i_trig<<"_"<<file_ending<<"."<<img_extension;
+      canvas_timeevolution_single->SaveAs(ss_trig_single.str().c_str());
+
     }
 
   }

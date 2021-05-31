@@ -10,6 +10,7 @@ ImageFormat png	#format in which monitoring plots are saved. Options: png, jpg, 
 UpdateFrequency 1. #specify frequency for the file history plot, in mins
 ForceUpdate 0	#force monitor plots to be produced even if there was no new data file available
 DrawMarker 0	#specify whether to use markers for the time evolution graphs or not
+DrawSingle 0	#specify whether to draw single triggerword timeevolution plots for the rate
 TriggerMaskFile ./configfiles/Monitoring/MonitoringTriggerMask.txt
 TriggerWordFile ./configfiles/Monitoring/TriggerWords.txt
 TriggerAlignFile ./configfiles/Monitoring/TriggerAlign.txt

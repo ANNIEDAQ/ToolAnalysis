@@ -56,6 +56,8 @@ bool MonitorReceive::Execute(){
   m_data->CStore.Set("HasCCData",false);
   m_data->CStore.Set("HasPMTData",false);
   m_data->CStore.Set("HasTrigData",false);
+  m_data->CStore.Set("HasNewFile",false);
+  m_data->CStore.Set("Above100",false);
 
   std::string State="Wait";
   m_data->CStore.Set("State",State);
@@ -130,60 +132,102 @@ bool MonitorReceive::Execute(){
 	  indata=0;
 	}
 	
+	//Check the size of the current file
+	uintmax_t current_filesize = boost::filesystem::file_size(iss.str().c_str());
+	m_data->CStore.Set("CurrentFileSize",current_filesize);
+	      
+	double file_size_mb = current_filesize/1048576.;
+	if (file_size_mb > 2000.) {
+		std::cout <<"MonitorReceive: Received new file: "<<iss.str()<<std::endl;
+		m_data->CStore.Set("HasNewFile",true);
+		m_data->CStore.Set("CurrentFileName",iss.str());
+
+		std::time_t current_filetime = boost::filesystem::last_write_time(iss.str().c_str());
+		m_data->CStore.Set("CurrentFileTime",current_filetime);
+		
+		m_data->CStore.Set("Above100",true);
+
+		return true;
+        }
+	      
+	m_data->CStore.Set("Above100",false);
+	      
 	indata=new BoostStore(false,0); 
 	indata->Initialise(iss.str());
 	      
 	std::cout <<"MonitorReceive: Received new file: "<<iss.str()<<std::endl;
+	m_data->CStore.Set("HasNewFile",true);
+	m_data->CStore.Set("CurrentFileName",iss.str());
+
+
+
+	std::time_t current_filetime = boost::filesystem::last_write_time(iss.str().c_str());
+	m_data->CStore.Set("CurrentFileTime",current_filetime);
 
 	MRDData= new BoostStore(false,2);
 	PMTData= new BoostStore(false,2);
 	TrigData = new BoostStore(false,2);
 
 	if (indata->Has("CCData")){
-		m_data->CStore.Set("HasCCData",true);	
-		indata->Get("CCData",*MRDData);
-		MRDData->Save("tmp");
-		m_data->Stores["CCData"]->Set("FileData",MRDData,false);
+		try{
+		  m_data->CStore.Set("HasCCData",true);	
+		  indata->Get("CCData",*MRDData);
+		  MRDData->Save("tmp");
+		  m_data->Stores["CCData"]->Set("FileData",MRDData,false);
+		} catch (...) {
+		  Log("MonitorReceive: Did not find CCData in file! (Maybe corrupted!!!) Don't process CCData",0,0);
+                  m_data->CStore.Set("HasCCData",false);
+		}
 	} else {
 		m_data->CStore.Set("HasCCData",false);
 	}
 	if (indata->Has("TrigData")){
-		m_data->CStore.Set("HasTrigData",true);
-		indata->Get("TrigData",*TrigData);
-		long totalentries_trig;
-		TrigData->Header->Get("TotalEntries",totalentries_trig);
-		std::map<int,TriggerData> TrigData_Map;
-		for (int i_trig=0; i_trig < totalentries_trig; i_trig++){
-			TriggerData TData;
-			TrigData->GetEntry(i_trig);
-			TrigData->Get("TrigData",TData);
-			TrigData_Map.emplace(i_trig,TData);
+		try{
+		  m_data->CStore.Set("HasTrigData",true);
+		  indata->Get("TrigData",*TrigData);
+		  long totalentries_trig;
+		  TrigData->Header->Get("TotalEntries",totalentries_trig);
+		  std::map<int,TriggerData> TrigData_Map;
+		  for (int i_trig=0; i_trig < totalentries_trig; i_trig++){
+			  TriggerData TData;
+			  TrigData->GetEntry(i_trig);
+			  TrigData->Get("TrigData",TData);
+			  TrigData_Map.emplace(i_trig,TData);
+		  }
+		  m_data->Stores["TrigData"]->Set("TrigDataMap",TrigData_Map);
+		} catch (...) {
+		  Log("MonitorReceive: Did not find TrigData in file! (Maybe corrupted!!!) Don't process TrigData",0,0);
+                  m_data->CStore.Set("HasTrigData",false);
 		}
-		m_data->Stores["TrigData"]->Set("TrigDataMap",TrigData_Map);
 	} else {
 		m_data->CStore.Set("HasTrigData",false);
 	}
 	if (indata->Has("PMTData")){
-		m_data->CStore.Set("HasPMTData",true);
-		indata->Get("PMTData",*PMTData);
-		long totalentries;
-        	PMTData->Header->Get("TotalEntries",totalentries);
-        	std::cout <<"MonitorReceive: Total entries: "<<totalentries<<std::endl;
-        	int ExecuteEntryNum=0;
-        	int EntriesToDo,CDEntryNum;
-        	if (totalentries < 14000) EntriesToDo = 70;      //don't process as many waveforms for AmBe runs (typically ~ 1000 entries)
-        	else EntriesToDo = 1000;               //otherwise do ~1000 entries out of ~15000 (or more)
-		CDEntryNum = 0;
-        	std::map<int,std::vector<CardData>> CardData_Map;
-        	while ((ExecuteEntryNum < EntriesToDo) && (CDEntryNum < totalentries)){
-            		std::vector<CardData> vector_CardData;
-            		PMTData->GetEntry(CDEntryNum);
-            		PMTData->Get("CardData",vector_CardData);
-            		CardData_Map.emplace(CDEntryNum,vector_CardData);
-            		ExecuteEntryNum++;
-            		CDEntryNum++;
-        	}
-        	m_data->Stores["PMTData"]->Set("CardDataMap",CardData_Map);  
+		try{
+		  m_data->CStore.Set("HasPMTData",true);
+		  indata->Get("PMTData",*PMTData);
+		  long totalentries;
+        	  PMTData->Header->Get("TotalEntries",totalentries);
+        	  std::cout <<"MonitorReceive: Total entries: "<<totalentries<<std::endl;
+        	  int ExecuteEntryNum=0;
+        	  int EntriesToDo,CDEntryNum;
+        	  if (totalentries < 14000) EntriesToDo = 70;      //don't process as many waveforms for AmBe runs (typically ~ 1000 entries)
+        	  else EntriesToDo = 1000;               //otherwise do ~1000 entries out of ~15000 (or more)
+		  CDEntryNum = 0;
+        	  std::map<int,std::vector<CardData>> CardData_Map;
+        	  while ((ExecuteEntryNum < EntriesToDo) && (CDEntryNum < totalentries)){
+            		  std::vector<CardData> vector_CardData;
+            		  PMTData->GetEntry(CDEntryNum);
+            		  PMTData->Get("CardData",vector_CardData);
+            		  CardData_Map.emplace(CDEntryNum,vector_CardData);
+            		  ExecuteEntryNum++;
+            		  CDEntryNum++;
+        	  }
+        	  m_data->Stores["PMTData"]->Set("CardDataMap",CardData_Map);  
+		} catch (...) {
+		  Log("MonitorReceive: Did not find PMTData in file! (Maybe corrupted!!!) Don't process PMTData",0,0);
+                  m_data->CStore.Set("HasPMTData",false);
+		}
 	} else {
 		m_data->CStore.Set("HasPMTData",false);
 	}

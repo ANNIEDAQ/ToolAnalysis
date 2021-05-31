@@ -123,5 +123,6 @@ if (tool=="MonitorTrigger") ret=new MonitorTrigger;
 if (tool=="EventClassification") ret=new EventClassification;
 
 if (tool=="DataSummary") ret=new DataSummary;
+if (tool=="MonitorDAQ") ret=new MonitorDAQ;
 return ret;
 }
